@@ -55,7 +55,7 @@ jobs:
           REPOSITORY: unisphere-main
           IMAGE_TAG: latest
         run: |
-          cp backend/build/libs/*-*.jar deploy-main/
+          cp build/libs/*-*.jar deploy-main/
           cd deploy-main
           docker build -t unisphere-main .
           docker tag $REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:$IMAGE_TAG
