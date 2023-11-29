@@ -28,7 +28,7 @@ public class AuthService {
 										extractor.getEmail(),
 										extractor.getNickname() + UUID.randomUUID(),
 										LocalDateTime.now(),
-										MemberRole.COMMON,
+										MemberRole.MEMBER,
 										extractor.getOauthId(),
 										extractor.getOauthType()
 								)

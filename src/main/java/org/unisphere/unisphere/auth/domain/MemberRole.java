@@ -1,5 +1,7 @@
 package org.unisphere.unisphere.auth.domain;
 
 public enum MemberRole {
-	COMMON, ADMIN
+	MEMBER, ADMIN;
+	public static final String S_ADMIN = "ROLE_ADMIN";
+	public static final String S_MEMBER = "ROLE_MEMBER";
 }

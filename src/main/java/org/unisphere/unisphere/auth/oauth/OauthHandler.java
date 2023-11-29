@@ -9,6 +9,8 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.unisphere.unisphere.auth.domain.CookieManager;
+import org.unisphere.unisphere.auth.jwt.JwtTokenProvider;
 import org.unisphere.unisphere.auth.oauth.extractor.OauthAttributeExtractor;
 import org.unisphere.unisphere.auth.service.AuthService;
 import org.unisphere.unisphere.config.ClientConfig;
@@ -21,6 +23,9 @@ public class OauthHandler {
 
 	private final AuthService authService;
 	private final ClientConfig clientConfig;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final CookieManager cookieManager;
+
 
 	@Bean
 	public AuthenticationSuccessHandler oauthAuthenticationSuccessHandler() {
@@ -33,12 +38,11 @@ public class OauthHandler {
 			);
 			Member member = authService.createAndFindOauthSocialMember(extractor);
 			log.info("Member Login Success: {}", member);
-//          TODO: JWT 토큰 발행 로직 추가
-//			String jwtToken = jwtTokenProvider.createCommonAccessToken(member.getId())
-//					.getTokenValue();
-//			cookieManager.createCookie(
-//					response, jwtToken
-//			);
+			String jwtToken = jwtTokenProvider.createCommonAccessToken(member.getId())
+					.getTokenValue();
+			cookieManager.createCookie(
+					response, jwtToken
+			);
 			response.sendRedirect(
 					clientConfig.getClientUrl() + clientConfig.getClientCallbackUrl()
 							+ "?isFirstLogin="

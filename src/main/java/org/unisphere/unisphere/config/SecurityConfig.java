@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -28,9 +29,9 @@ public class SecurityConfig {
 
 	private final ServerConfig serverConfig;
 	private final ClientConfig clientConfig;
-	//	private final AuthenticationManager jwtAuthenticationManager;
-//	private final AccessDeniedHandler jwtAccessDeniedHandler;
-//	private final AuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	private final AuthenticationManager jwtAuthenticationManager;
+	private final AccessDeniedHandler jwtAccessDeniedHandler;
+	private final AuthenticationEntryPoint jwtAuthenticationEntryPoint;
 	private final AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 	private final AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
 
@@ -48,21 +49,15 @@ public class SecurityConfig {
 				.sessionManagement()
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				.and()
-//				TODO: JwtAuthentiManager를 추가 후 주석 해제
-//				TODO: Jwt 성공/실패 핸들러를 추가 후 주석 해제
-
-//				.oauth2ResourceServer()
-//					.bearerTokenResolver(new DefaultBearerTokenResolver())
-//					.jwt()
-//						.authenticationManager(jwtAuthenticationManager)
-//					.and()
-//					.accessDeniedHandler(jwtAccessDeniedHandler)
-//					.authenticationEntryPoint(jwtAuthenticationEntryPoint)
-//				.and()
+				.oauth2ResourceServer()
+					.bearerTokenResolver(new DefaultBearerTokenResolver())
+					.jwt()
+						.authenticationManager(jwtAuthenticationManager)
+					.and()
+					.accessDeniedHandler(jwtAccessDeniedHandler)
+					.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+				.and()
 				.oauth2Login()
-//		        TODO: OAuth2 성공/실패 핸들러를 추가 후 주석 해제
-//				TODO: OAuth2 로그인/콜백 엔드포인트를 추가 후 주석 해제
-
 					.successHandler(oauth2AuthenticationSuccessHandler)
 					.failureHandler(oauth2AuthenticationFailureHandler)
 					.userInfoEndpoint()
