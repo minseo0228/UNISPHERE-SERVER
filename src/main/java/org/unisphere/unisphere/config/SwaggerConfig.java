@@ -13,22 +13,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(
-		info = @Info(title = "Jungko-Server API", version = "v1"),
-		security = @SecurityRequirement(name = "bearerAuth")
-)
-@SecurityScheme(
-		name = "bearerAuth",
-		type = SecuritySchemeType.HTTP,
-		scheme = "bearer"
-)
+@OpenAPIDefinition(info = @Info(title = "Unisphere-Main-Server API", version = "v1"), security = @SecurityRequirement(name = "bearerAuth"))
+@SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer")
 public class SwaggerConfig {
 
 	@Bean
 	public OpenAPI getOpenAPI() {
 		return new OpenAPI().components(new Components()
 				.addHeaders("Authorization",
-						new Header().description("Auth header").schema(new StringSchema()))
-		);
+						new Header().description("Auth header").schema(new StringSchema())));
 	}
 }
