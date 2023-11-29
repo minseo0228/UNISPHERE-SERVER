@@ -53,6 +53,7 @@ public class Article {
 	@Column
 	private LocalDateTime approvedAt;
 
+	@ToString.Exclude
 	@OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<InterestedArticle> interestedArticles = new ArrayList<>();
 }

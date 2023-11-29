@@ -27,6 +27,7 @@ public class SocialMember {
 	private Long id;
 
 	@JoinColumn(name = "member_id", nullable = false)
+	@ToString.Exclude
 	@OneToOne(fetch = FetchType.LAZY)
 	private Member member;
 
@@ -36,4 +37,14 @@ public class SocialMember {
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private OauthType oauthType;
+
+	public static SocialMember of(
+			Member member, String oauthId, OauthType oauthType
+	) {
+		SocialMember socialMember = new SocialMember();
+		socialMember.member = member;
+		socialMember.oauthId = oauthId;
+		socialMember.oauthType = oauthType;
+		return socialMember;
+	}
 }

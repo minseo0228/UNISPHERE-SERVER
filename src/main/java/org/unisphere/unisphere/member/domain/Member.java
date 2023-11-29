@@ -14,12 +14,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.unisphere.unisphere.article.domain.InterestedArticle;
 import org.unisphere.unisphere.auth.domain.MemberRole;
+import org.unisphere.unisphere.auth.domain.OauthType;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
 
 @Entity
@@ -51,15 +53,36 @@ public class Member {
 	@Column(nullable = true)
 	private LocalDateTime deletedAt;
 
+	@ToString.Exclude
 	@OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private PasswordMember passwordMember;
 
+	@ToString.Exclude
 	@OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private SocialMember socialMember;
 
+	@ToString.Exclude
 	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<GroupRegistration> groupRegistrations = new ArrayList<>();
 
+	@ToString.Exclude
 	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<InterestedArticle> interestedArticles = new ArrayList<>();
+
+	@Transient
+	private boolean isFirstLogin = false;
+
+	public static Member createSocialMember(
+			String email, String nickname, LocalDateTime now, MemberRole role,
+			String oauthId, OauthType oauthType
+	) {
+		Member member = new Member();
+		member.role = role;
+		member.email = email;
+		member.nickname = nickname;
+		member.createdAt = now;
+		member.socialMember = SocialMember.of(member, oauthId, oauthType);
+		member.isFirstLogin = true;
+		return member;
+	}
 }
