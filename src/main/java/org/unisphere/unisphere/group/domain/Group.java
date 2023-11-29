@@ -53,6 +53,7 @@ public class Group {
 	@Column
 	private LocalDateTime approvedAt;
 
+	@ToString.Exclude
 	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<GroupRegistration> groupRegistrations = new ArrayList<>();
 }

@@ -24,6 +24,7 @@ public class PasswordMember {
 	private Long id;
 
 	@JoinColumn(name = "member_id", nullable = false)
+	@ToString.Exclude
 	@OneToOne(fetch = FetchType.LAZY)
 	private Member member;
 
