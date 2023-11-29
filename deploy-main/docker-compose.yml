@@ -3,7 +3,10 @@ version: "3"
 services:
   unisphere-main:
     image: "181299391632.dkr.ecr.ap-northeast-2.amazonaws.com/unisphere-main:latest"
+    restart: always
     container_name: "unisphere-main"
+    ports:
+      - "8080:8080"
     volumes:
       - $HOME/logs/:/logs/
     networks:
