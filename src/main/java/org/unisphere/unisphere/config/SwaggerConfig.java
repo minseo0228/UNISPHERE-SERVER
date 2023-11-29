@@ -14,23 +14,21 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-		info = @Info(title = "Jungko-Server API", version = "v1")
-//		TODO: JWT 인증 구현 후 주석 해제
-//		security = @SecurityRequirement(name = "bearerAuth")
+		info = @Info(title = "Jungko-Server API", version = "v1"),
+		security = @SecurityRequirement(name = "bearerAuth")
 )
-//@SecurityScheme(
-//		name = "bearerAuth",
-//		type = SecuritySchemeType.HTTP,
-//		scheme = "bearer"
-//)
+@SecurityScheme(
+		name = "bearerAuth",
+		type = SecuritySchemeType.HTTP,
+		scheme = "bearer"
+)
 public class SwaggerConfig {
 
 	@Bean
 	public OpenAPI getOpenAPI() {
 		return new OpenAPI().components(new Components()
-//      TODO: JWT 인증 구현 후 주석 해제
-//				.addHeaders("Authorization",
-//						new Header().description("Auth header").schema(new StringSchema()))
+				.addHeaders("Authorization",
+						new Header().description("Auth header").schema(new StringSchema()))
 		);
 	}
 }

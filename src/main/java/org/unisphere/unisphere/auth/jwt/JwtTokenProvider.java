@@ -38,7 +38,7 @@ public class JwtTokenProvider {
 				.issuedAt(now)
 				.expiresAt(now.plusSeconds(jwtConfig.getCommonTokenExpireTime()))
 				.claim(JwtConfig.MEMBER_ID, id)
-				.claim(JwtConfig.ROLES, List.of(MemberRole.S_MEMBER))
+				.claim(JwtConfig.ROLES, List.of(MemberRole.S_USER))
 				.build();
 		return jwtEncoder.encode(JwtEncoderParameters.from(header, claims));
 	}

@@ -30,14 +30,12 @@ public class JwtAuthenticationConverter implements Converter<Jwt, JwtAuthenticat
 			authorities.addAll(
 					jwt.getClaimAsStringList(JwtConfig.ROLES)
 							.stream()
-							.map(role -> ROLE_PREFIX + role)
 							.map(SimpleGrantedAuthority::new)
 							.collect(Collectors.toList())
 			);
 		}
 		if (jwt.hasClaim(JwtConfig.SCOPES)) {
 			authorities.addAll(jwt.getClaimAsStringList(JwtConfig.SCOPES).stream()
-					.map(scope -> SCOPE_PREFIX + scope)
 					.map(SimpleGrantedAuthority::new)
 					.collect(Collectors.toList())
 			);
