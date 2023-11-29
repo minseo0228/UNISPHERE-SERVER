@@ -28,6 +28,7 @@ jobs:
 
       - name: Gradle 빌드
         run: |
+          mkdir -p src/main/resources/
           echo ${{ secrets.APPLICATION_LOCAL_YML }} | base64 -d > src/main/resources/application-local.yml
           echo ${{ secrets.APPLICATION_PROD_YML }} | base64 -d > src/main/resources/application-prod.yml
           chmod +x gradlew
