@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  unisphere-main:
+    image: "181299391632.dkr.ecr.ap-northeast-2.amazonaws.com/unisphere-main:latest"
+    container_name: "unisphere-main"
+    volumes:
+      - $HOME/logs/:/logs/
+    networks:
+      - unisphere-network
+
+networks:
+  unisphere-network:
+    driver: bridge
