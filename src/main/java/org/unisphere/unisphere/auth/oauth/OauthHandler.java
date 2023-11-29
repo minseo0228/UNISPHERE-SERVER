@@ -43,10 +43,12 @@ public class OauthHandler {
 			cookieManager.createCookie(
 					response, jwtToken
 			);
-			response.sendRedirect(
-					clientConfig.getClientUrl() + clientConfig.getClientCallbackUrl()
-							+ "?isFirstLogin="
-							+ member.isFirstLogin());
+
+			String redirectUrl = clientConfig.getClientUrl() + clientConfig.getClientCallbackUrl();
+			if (member.isFirstLogin()) {
+				redirectUrl += "?isFirstLogin=true";
+			}
+			response.sendRedirect(redirectUrl);
 		};
 	}
 
