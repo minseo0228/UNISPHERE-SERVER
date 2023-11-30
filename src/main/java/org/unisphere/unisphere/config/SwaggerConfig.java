@@ -9,6 +9,8 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,10 +19,16 @@ import org.springframework.context.annotation.Configuration;
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer")
 public class SwaggerConfig {
 
+	@Value("${swagger.base-url}")
+	private String swaggerBaseUrl;
+
 	@Bean
 	public OpenAPI getOpenAPI() {
-		return new OpenAPI().components(new Components()
-				.addHeaders("Authorization",
-						new Header().description("Auth header").schema(new StringSchema())));
+		return new OpenAPI()
+				.addServersItem(new Server().url(swaggerBaseUrl))
+				.components(new Components()
+						.addHeaders("Authorization",
+								new Header().description("Auth header")
+										.schema(new StringSchema())));
 	}
 }
