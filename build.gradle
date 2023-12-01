@@ -33,7 +33,6 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-oauth2-client')
 
     // AWS
-    implementation 'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.4,)'
 
     // Database
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
