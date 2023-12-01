@@ -1,9 +1,19 @@
 package org.unisphere.unisphere.group.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.unisphere.unisphere.annotation.LoginMemberInfo;
+import org.unisphere.unisphere.auth.domain.MemberRole;
+import org.unisphere.unisphere.auth.dto.MemberSessionDto;
+import org.unisphere.unisphere.group.dto.response.GroupListResponseDto;
 import org.unisphere.unisphere.group.service.GroupService;
 
 @RestController
@@ -16,6 +26,21 @@ public class GroupController {
 
 	// 전체 단체 목록 조회
 	// GET /api/v1/groups/all?page={page}&size={size}
+	@Operation(summary = "전체 단체 목록 조회", description = "전체 단체 목록을 조회합니다.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "ok"),
+	})
+	@GetMapping(value = "/all")
+	@Secured(MemberRole.S_USER)
+	public GroupListResponseDto getAllGroups(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		log.info("Called getAllGroups member: {}, page: {}, size: {}", memberSessionDto, page,
+				size);
+		return GroupListResponseDto.builder().build();
+	}
 
 	// 내가 속한 단체 목록 조회
 	// GET /api/v1/groups/members/me?page={page}&size={size}
