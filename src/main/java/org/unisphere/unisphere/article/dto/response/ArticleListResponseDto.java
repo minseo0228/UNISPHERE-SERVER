@@ -1,0 +1,16 @@
+package org.unisphere.unisphere.article.dto.response;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
+
+@AllArgsConstructor
+@Getter
+@ToString
+@Builder
+@Schema(description = "소식지 목록 조회 응답")
+public class ArticleListResponseDto {
+
+}

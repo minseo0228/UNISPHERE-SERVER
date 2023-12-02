@@ -1,9 +1,9 @@
 package org.unisphere.unisphere.member.controller;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.unisphere.unisphere.annotation.LoginMemberInfo;
 import org.unisphere.unisphere.auth.domain.MemberRole;
 import org.unisphere.unisphere.auth.dto.MemberSessionDto;
-import org.unisphere.unisphere.member.dto.request.AvatarUpdateRequestDto;
+import org.unisphere.unisphere.member.dto.request.MyAvatarUpdateRequestDto;
 import org.unisphere.unisphere.member.dto.response.MyAvatarResponseDto;
 import org.unisphere.unisphere.member.service.MemberService;
 
@@ -23,6 +23,7 @@ import org.unisphere.unisphere.member.service.MemberService;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/members")
+@Tag(name = "Member", description = "회원")
 public class MemberController {
 
 	private final MemberService memberService;
@@ -52,10 +53,10 @@ public class MemberController {
 	@Secured(MemberRole.S_USER)
 	public MyAvatarResponseDto updateAvatar(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
-			@RequestBody AvatarUpdateRequestDto avatarUpdateRequestDto
+			@RequestBody MyAvatarUpdateRequestDto myAvatarUpdateRequestDto
 	) {
 		log.info("Called updateAvatar member: {}, avatarUpdateRequestDto: {}", memberSessionDto,
-				avatarUpdateRequestDto);
+				myAvatarUpdateRequestDto);
 		return MyAvatarResponseDto.builder().build();
 	}
 
