@@ -19,7 +19,7 @@ public class GroupPreviewDto {
 	@Schema(description = "단체 이름", example = "유니스피어")
 	private final String name;
 
-	@Schema(description = "단체 로고 이미지 URL", example = "https://unisphere.org/group-images/random-string/logo-image.png")
+	@Schema(description = "단체 로고 이미지 URL", example = "https://unisphere.org/logo-images/random-string/logo-image.png")
 	private final String logoImageUrl;
 
 	@Schema(description = "단체 요약 설명", example = "유니스피어는 멋진 단체에요.")

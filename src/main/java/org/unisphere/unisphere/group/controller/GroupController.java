@@ -3,6 +3,7 @@ package org.unisphere.unisphere.group.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,17 +22,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.unisphere.unisphere.annotation.LoginMemberInfo;
 import org.unisphere.unisphere.auth.domain.MemberRole;
 import org.unisphere.unisphere.auth.dto.MemberSessionDto;
-import org.unisphere.unisphere.group.dto.GroupHomePageResponseDto;
+import org.unisphere.unisphere.group.dto.response.GroupHomePageResponseDto;
 import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
+import org.unisphere.unisphere.group.dto.request.GroupHomePageUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.response.GroupAvatarResponseDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
 import org.unisphere.unisphere.group.dto.response.GroupListResponseDto;
+import org.unisphere.unisphere.group.dto.response.GroupMemberListResponseDto;
 import org.unisphere.unisphere.group.service.GroupService;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/groups")
+@Tag(name = "단체 (Group)", description = "단체 관련 API")
 public class GroupController {
 
 	private final GroupService groupService;
@@ -153,9 +157,12 @@ public class GroupController {
 	@Secured(MemberRole.S_USER)
 	public GroupHomePageResponseDto updateGroupHomePage(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
-			@PathVariable("groupId") Long groupId
+			@PathVariable("groupId") Long groupId,
+			@RequestBody GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto
 	) {
-		log.info("Called updateGroupHomePage member: {}, groupId: {}", memberSessionDto, groupId);
+		log.info(
+				"Called updateGroupHomePage member: {}, groupId: {}, groupHomePageUpdateRequestDto: {}",
+				memberSessionDto, groupId, groupHomePageUpdateRequestDto);
 		return GroupHomePageResponseDto.builder().build();
 	}
 
@@ -167,7 +174,7 @@ public class GroupController {
 	})
 	@GetMapping(value = "/{groupId}/members")
 	@Secured(MemberRole.S_USER)
-	public GroupListResponseDto getGroupMembers(
+	public GroupMemberListResponseDto getGroupMembers(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId,
 			@RequestParam(defaultValue = "0") int page,
@@ -175,7 +182,7 @@ public class GroupController {
 	) {
 		log.info("Called getGroupMembers member: {}, groupId: {}, page: {}, size: {}",
 				memberSessionDto, groupId, page, size);
-		return GroupListResponseDto.builder().build();
+		return GroupMemberListResponseDto.builder().build();
 	}
 
 	// 단체 생성 요청
@@ -246,6 +253,23 @@ public class GroupController {
 
 	// 단체 탈퇴
 	// DELETE /api/v1/groups/{groupId}/unregister (pending)
+	@Operation(
+			summary = "단체 탈퇴",
+			description = "특정 단체를 떠납니다. 단체 생성자가 요청하면 생성자를 다른 단체 관리자나 단체 회원에게 위임하고, 혼자 남아있는 상태에서 요청한 경우에는 단체가 삭제됩니다.",
+			deprecated = true
+	)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "no content")
+	})
+	@DeleteMapping(value = "/{groupId}/unregister")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Secured(MemberRole.S_USER)
+	public void unregisterGroup(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@PathVariable("groupId") Long groupId
+	) {
+		log.info("Called unregisterGroup member: {}, groupId: {}", memberSessionDto, groupId);
+	}
 
 	// 특정 회원을 단체에 초대
 	// POST /api/v1/groups/{groupId}/members/{memberId}/invite (pending)

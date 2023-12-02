@@ -19,6 +19,6 @@ public class GroupMemberDto {
 	@Schema(description = "회원 닉네임", example = "테스트")
 	private final String nickname;
 
-	@Schema(description = "회원 아바타 이미지 URL", example = "https://unisphere.org/member-images/random-string/avatar-image.png")
+	@Schema(description = "회원 아바타 이미지 URL", example = "https://unisphere.org/avatar-images/random-string/avatar-image.png")
 	private final String avatarImageUrl;
 }
