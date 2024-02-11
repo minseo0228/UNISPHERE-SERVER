@@ -1,9 +1,17 @@
 package org.unisphere.unisphere.exception;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -33,5 +41,60 @@ public class ExceptionController {
 		return ResponseEntity
 				.status(e.status.getStatus())
 				.body(e.status);
+	}
+
+	@ExceptionHandler(BindException.class)
+	public ResponseEntity<ErrorResponse> handleBind(final BindException exception) {
+		BindingResult result = exception.getBindingResult();
+
+		String joinedMessages = result.getAllErrors().stream()
+				.map(DefaultMessageSourceResolvable::getDefaultMessage)
+				.collect(Collectors.joining(" "));
+
+		final ErrorResponse errorResponse = new ErrorResponse();
+		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setMessage(joinedMessages);
+		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ErrorResponse> handleIllegalArgument(
+			final IllegalArgumentException exception) {
+		final ErrorResponse errorResponse = new ErrorResponse();
+		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setMessage(exception.getMessage());
+		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
+			final MethodArgumentTypeMismatchException exception) {
+		final ErrorResponse errorResponse = new ErrorResponse();
+		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setMessage(exception.getMessage());
+		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+			final MethodArgumentNotValidException exception) {
+		final BindingResult bindingResult = exception.getBindingResult();
+		final List<FieldError> fieldErrors = bindingResult.getFieldErrors()
+				.stream()
+				.map(error -> {
+					final FieldError fieldError = new FieldError();
+					fieldError.setErrorCode(error.getCode());
+					fieldError.setField(error.getField());
+					return fieldError;
+				})
+				.collect(Collectors.toList());
+		final ErrorResponse errorResponse = new ErrorResponse();
+		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setFieldErrors(fieldErrors);
+		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
 }

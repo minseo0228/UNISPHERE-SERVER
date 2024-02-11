@@ -1,4 +1,4 @@
-package org.unisphere.unisphere.utils;
+package org.unisphere.unisphere.exception;
 
 import java.util.List;
 import lombok.Getter;
