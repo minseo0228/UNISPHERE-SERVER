@@ -23,7 +23,7 @@ import org.unisphere.unisphere.annotation.LoginMemberInfo;
 import org.unisphere.unisphere.article.dto.request.ArticleSubmissionRequestDto;
 import org.unisphere.unisphere.article.dto.response.ArticleDetailResponseDto;
 import org.unisphere.unisphere.article.dto.response.ArticleListResponseDto;
-import org.unisphere.unisphere.article.service.ArticleService;
+import org.unisphere.unisphere.article.service.ArticleFacadeService;
 import org.unisphere.unisphere.auth.domain.MemberRole;
 import org.unisphere.unisphere.auth.dto.MemberSessionDto;
 
@@ -34,7 +34,7 @@ import org.unisphere.unisphere.auth.dto.MemberSessionDto;
 @Tag(name = "소식지 (Article)", description = "소식지 관련 API")
 public class ArticleController {
 
-	private final ArticleService articleService;
+	private final ArticleFacadeService articleFacadeService;
 
 	// 개인 이름으로 소식지 투고
 	// POST /api/v1/articles/members/me

@@ -29,7 +29,7 @@ import org.unisphere.unisphere.group.dto.response.GroupAvatarResponseDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
 import org.unisphere.unisphere.group.dto.response.GroupListResponseDto;
 import org.unisphere.unisphere.group.dto.response.GroupMemberListResponseDto;
-import org.unisphere.unisphere.group.service.GroupService;
+import org.unisphere.unisphere.group.service.GroupFacadeService;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ import org.unisphere.unisphere.group.service.GroupService;
 @Tag(name = "단체 (Group)", description = "단체 관련 API")
 public class GroupController {
 
-	private final GroupService groupService;
+	private final GroupFacadeService groupFacadeService;
 
 	// 전체 단체 목록 조회
 	// GET /api/v1/groups/all?page={page}&size={size}

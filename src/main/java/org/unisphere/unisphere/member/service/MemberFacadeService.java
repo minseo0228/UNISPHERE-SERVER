@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
-import org.unisphere.unisphere.auth.dto.MemberSessionDto;
 import org.unisphere.unisphere.image.service.ImageService;
 import org.unisphere.unisphere.mapper.MemberMapper;
 import org.unisphere.unisphere.member.domain.Member;
@@ -18,7 +17,7 @@ import org.unisphere.unisphere.member.infrastructure.MemberRepository;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class MemberService {
+public class MemberFacadeService {
 
 	private final MemberRepository memberRepository;
 	private final MemberMapper memberMapper;

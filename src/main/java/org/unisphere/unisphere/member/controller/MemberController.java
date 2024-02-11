@@ -19,7 +19,7 @@ import org.unisphere.unisphere.auth.domain.MemberRole;
 import org.unisphere.unisphere.auth.dto.MemberSessionDto;
 import org.unisphere.unisphere.member.dto.request.MyAvatarUpdateRequestDto;
 import org.unisphere.unisphere.member.dto.response.MyAvatarResponseDto;
-import org.unisphere.unisphere.member.service.MemberService;
+import org.unisphere.unisphere.member.service.MemberFacadeService;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ import org.unisphere.unisphere.member.service.MemberService;
 @Tag(name = "회원 (Member)", description = "회원 관련 API")
 public class MemberController {
 
-	private final MemberService memberService;
+	private final MemberFacadeService memberFacadeService;
 
 	// 내 아바타 정보 조회
 	// GET api/v1/members/me/avatar
@@ -42,7 +42,7 @@ public class MemberController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto
 	) {
 		log.info("Called getMyAvatar member: {}", memberSessionDto);
-		return memberService.getMemberAvatar(memberSessionDto.getMemberId());
+		return memberFacadeService.getMemberAvatar(memberSessionDto.getMemberId());
 	}
 
 	// 내 아바타 편집
@@ -59,7 +59,7 @@ public class MemberController {
 	) {
 		log.info("Called updateAvatar member: {}, avatarUpdateRequestDto: {}", memberSessionDto,
 				myAvatarUpdateRequestDto);
-		return memberService.updateMemberAvatar(memberSessionDto.getMemberId(),
+		return memberFacadeService.updateMemberAvatar(memberSessionDto.getMemberId(),
 				myAvatarUpdateRequestDto);
 	}
 

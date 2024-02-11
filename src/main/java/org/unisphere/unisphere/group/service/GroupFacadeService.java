@@ -10,7 +10,7 @@ import org.unisphere.unisphere.group.infrastructure.GroupRepository;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class GroupService {
+public class GroupFacadeService {
 
 	private final GroupRepository groupRepository;
 }
