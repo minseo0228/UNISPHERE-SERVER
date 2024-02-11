@@ -7,7 +7,12 @@ import org.springframework.http.HttpStatus;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @Getter
 public enum ExceptionStatus {
+	//	Member
 	NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "회원이 존재하지 않습니다"),
+
+	//	Image
+	NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다."),
+	FAILED_TO_DELETE_IMAGE(HttpStatus.BAD_GATEWAY, "이미지 삭제에 실패했습니다. 다시 시도해주세요."),
 	;
 
 	private final int status;

@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.unisphere.unisphere.annotation.Logging;
 import org.unisphere.unisphere.annotation.LoginMemberInfo;
 import org.unisphere.unisphere.auth.domain.MemberRole;
 import org.unisphere.unisphere.auth.dto.MemberSessionDto;
@@ -33,7 +33,7 @@ import org.unisphere.unisphere.group.service.GroupFacadeService;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
+@Logging
 @RequestMapping("/api/v1/groups")
 @Tag(name = "단체 (Group)", description = "단체 관련 API")
 public class GroupController {
@@ -53,8 +53,6 @@ public class GroupController {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		log.info("Called getAllGroups member: {}, page: {}, size: {}", memberSessionDto, page,
-				size);
 		return GroupListResponseDto.builder().build();
 	}
 
@@ -71,8 +69,6 @@ public class GroupController {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		log.info("Called getMyGroups member: {}, page: {}, size: {}", memberSessionDto, page,
-				size);
 		return GroupListResponseDto.builder().build();
 	}
 
@@ -91,8 +87,6 @@ public class GroupController {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		log.info("Called getMemberGroups member: {}, targetMemberId: {}, page: {}, size: {}",
-				memberSessionDto, targetMemberId, page, size);
 		return GroupListResponseDto.builder().build();
 	}
 
@@ -108,7 +102,6 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		log.info("Called getGroupAvatar member: {}, groupId: {}", memberSessionDto, groupId);
 		return GroupAvatarResponseDto.builder().build();
 	}
 
@@ -125,9 +118,6 @@ public class GroupController {
 			@PathVariable("groupId") Long groupId,
 			@RequestBody GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto
 	) {
-		log.info(
-				"Called updateGroupAvatar member: {}, groupId: {}, groupAvatarUpdateRequestDto: {}",
-				memberSessionDto, groupId, groupAvatarUpdateRequestDto);
 		return GroupAvatarResponseDto.builder().build();
 	}
 
@@ -143,7 +133,6 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		log.info("Called getGroupHomePage member: {}, groupId: {}", memberSessionDto, groupId);
 		return GroupHomePageResponseDto.builder().build();
 	}
 
@@ -160,9 +149,6 @@ public class GroupController {
 			@PathVariable("groupId") Long groupId,
 			@RequestBody GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto
 	) {
-		log.info(
-				"Called updateGroupHomePage member: {}, groupId: {}, groupHomePageUpdateRequestDto: {}",
-				memberSessionDto, groupId, groupHomePageUpdateRequestDto);
 		return GroupHomePageResponseDto.builder().build();
 	}
 
@@ -180,8 +166,6 @@ public class GroupController {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		log.info("Called getGroupMembers member: {}, groupId: {}, page: {}, size: {}",
-				memberSessionDto, groupId, page, size);
 		return GroupMemberListResponseDto.builder().build();
 	}
 
@@ -198,8 +182,6 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@RequestBody GroupCreateRequestDto groupCreateRequestDto
 	) {
-		log.info("Called createGroup member: {}, groupCreateRequestDto: {}", memberSessionDto,
-				groupCreateRequestDto);
 	}
 
 	// 단체 생성 승인
@@ -214,7 +196,6 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		log.info("Called acceptGroupCreation member: {}, groupId: {}", memberSessionDto, groupId);
 	}
 
 	// 단체 가입 요청
@@ -230,7 +211,6 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		log.info("Called registerGroup member: {}, groupId: {}", memberSessionDto, groupId);
 	}
 
 	// 단체 가입 승인
@@ -246,8 +226,6 @@ public class GroupController {
 			@PathVariable("groupId") Long groupId,
 			@PathVariable("memberId") Long targetMemberId
 	) {
-		log.info("Called approveGroupRegister member: {}, groupId: {}, targetMemberId: {}",
-				memberSessionDto, groupId, targetMemberId);
 	}
 
 
@@ -268,7 +246,6 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		log.info("Called unregisterGroup member: {}, groupId: {}", memberSessionDto, groupId);
 	}
 
 	// 특정 회원을 단체에 초대
@@ -295,7 +272,5 @@ public class GroupController {
 			@PathVariable("groupId") Long groupId,
 			@PathVariable("memberId") Long targetMemberId
 	) {
-		log.info("Called kickMemberFromGroup member: {}, groupId: {}, targetMemberId: {}",
-				memberSessionDto, groupId, targetMemberId);
 	}
 }
