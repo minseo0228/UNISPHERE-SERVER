@@ -9,10 +9,10 @@ import javax.validation.Payload;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = MemberUpdateValidator.class)
-public @interface MemberUpdateValidation {
+@Constraint(validatedBy = AvatarUpdateValidator.class)
+public @interface AvatarUpdateValidation {
 
-	String message() default "MemberUpdateValidation";
+	String message() default "AvatarUpdateValidation";
 
 	Class<?>[] groups() default {};
 

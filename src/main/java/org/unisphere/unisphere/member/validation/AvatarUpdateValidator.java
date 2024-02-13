@@ -7,8 +7,8 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import org.unisphere.unisphere.member.dto.request.MyAvatarUpdateRequestDto;
 
-public class MemberUpdateValidator implements
-		ConstraintValidator<MemberUpdateValidation, MyAvatarUpdateRequestDto> {
+public class AvatarUpdateValidator implements
+		ConstraintValidator<AvatarUpdateValidation, MyAvatarUpdateRequestDto> {
 
 	private static final String NICKNAME_REGEX = "^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣]+$";
 	private static final Pattern NICKNAME_PATTERN = Pattern.compile(NICKNAME_REGEX);

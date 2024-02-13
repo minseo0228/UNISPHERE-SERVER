@@ -8,8 +8,7 @@ import lombok.Setter;
 @Setter
 public class ErrorResponse {
 
-	private Integer httpStatus;
-	private String exception;
+	private Integer status;
 	private String message;
-	private List<FieldError> fieldErrors;
+	private String reason;
 }

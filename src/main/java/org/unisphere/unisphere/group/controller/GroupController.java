@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -175,7 +176,7 @@ public class GroupController {
 	@Secured(MemberRole.S_USER)
 	public void createGroup(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
-			@RequestBody GroupCreateRequestDto groupCreateRequestDto
+			@Valid @RequestBody GroupCreateRequestDto groupCreateRequestDto
 	) {
 		groupFacadeService.createGroup(memberSessionDto.getMemberId(), groupCreateRequestDto);
 	}

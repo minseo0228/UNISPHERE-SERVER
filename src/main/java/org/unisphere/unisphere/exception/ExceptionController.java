@@ -52,8 +52,8 @@ public class ExceptionController {
 				.collect(Collectors.joining(" "));
 
 		final ErrorResponse errorResponse = new ErrorResponse();
-		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
-		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setReason(exception.getClass().getSimpleName());
 		errorResponse.setMessage(joinedMessages);
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
@@ -62,8 +62,8 @@ public class ExceptionController {
 	public ResponseEntity<ErrorResponse> handleIllegalArgument(
 			final IllegalArgumentException exception) {
 		final ErrorResponse errorResponse = new ErrorResponse();
-		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
-		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setReason(exception.getClass().getSimpleName());
 		errorResponse.setMessage(exception.getMessage());
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
@@ -72,8 +72,8 @@ public class ExceptionController {
 	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
 			final MethodArgumentTypeMismatchException exception) {
 		final ErrorResponse errorResponse = new ErrorResponse();
-		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
-		errorResponse.setException(exception.getClass().getSimpleName());
+		errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setReason(exception.getClass().getSimpleName());
 		errorResponse.setMessage(exception.getMessage());
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
@@ -82,19 +82,11 @@ public class ExceptionController {
 	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
 			final MethodArgumentNotValidException exception) {
 		final BindingResult bindingResult = exception.getBindingResult();
-		final List<FieldError> fieldErrors = bindingResult.getFieldErrors()
-				.stream()
-				.map(error -> {
-					final FieldError fieldError = new FieldError();
-					fieldError.setErrorCode(error.getCode());
-					fieldError.setField(error.getField());
-					return fieldError;
-				})
-				.collect(Collectors.toList());
+		String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
 		final ErrorResponse errorResponse = new ErrorResponse();
-		errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST.value());
-		errorResponse.setException(exception.getClass().getSimpleName());
-		errorResponse.setFieldErrors(fieldErrors);
+		errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+		errorResponse.setReason(exception.getClass().getSimpleName());
+		errorResponse.setMessage(message);
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 	}
 }
