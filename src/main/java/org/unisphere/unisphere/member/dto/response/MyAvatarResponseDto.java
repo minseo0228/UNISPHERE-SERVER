@@ -1,4 +1,5 @@
-package org.unisphere.unisphere.member.dto.response;
+git package org.unisphere.unisphere.member.dto.response;
+git package org.unisphere.unisphere.member.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
