@@ -129,7 +129,7 @@ public class GroupFacadeService {
 			GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupAdmin(member)) {
+		if (groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
 			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		String imageUrl = imageService.getImageUrl(
@@ -146,7 +146,7 @@ public class GroupFacadeService {
 			GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupAdmin(member)) {
+		if (groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
 			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		String logoImageUrl = imageService.getImageUrl(
@@ -161,7 +161,7 @@ public class GroupFacadeService {
 	public void requestRegisterGroup(Long memberId, Long groupId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (group.isGroupMember(member)) {
+		if (groupQueryService.findGroupMembers(group.getId()).contains(member)) {
 			throw ExceptionStatus.ALREADY_GROUP_MEMBER.toServiceException();
 		}
 		groupCommandService.requestRegisterGroup(member, group);
@@ -171,7 +171,7 @@ public class GroupFacadeService {
 	public void approveGroupRegister(Long memberId, Long groupId, Long targetMemberId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupAdmin(member)) {
+		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
 			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		Member targetMember = memberQueryService.getMember(targetMemberId);
@@ -182,7 +182,7 @@ public class GroupFacadeService {
 	public void appointGroupAdmin(Long memberId, Long groupId, Long targetMemberId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isOwner(member)) {
+		if (!group.isGroupOwner(member)) {
 			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
 		}
 		Member targetMember = memberQueryService.getMember(targetMemberId);
@@ -193,7 +193,7 @@ public class GroupFacadeService {
 	public void appointGroupOwner(Long memberId, Long groupId, Long targetMemberId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isOwner(member)) {
+		if (!group.isGroupOwner(member)) {
 			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
 		}
 		Member targetMember = memberQueryService.getMember(targetMemberId);
@@ -204,7 +204,7 @@ public class GroupFacadeService {
 	public void deleteGroup(Long memberId, Long groupId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isOwner(member)) {
+		if (!group.isGroupOwner(member)) {
 			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
 		}
 		groupCommandService.deleteGroup(group);
@@ -214,9 +214,20 @@ public class GroupFacadeService {
 	public void unregisterGroup(Long memberId, Long groupId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupMember(member)) {
+		if (!groupQueryService.findGroupMembers(group.getId()).contains(member)) {
 			throw ExceptionStatus.NOT_GROUP_MEMBER.toServiceException();
 		}
 		groupCommandService.unregisterGroup(member, group);
+	}
+
+	@Transactional
+	public void kickMemberFromGroup(Long memberId, Long groupId, Long targetMemberId) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
+		}
+		Member targetMember = memberQueryService.getMember(targetMemberId);
+		groupCommandService.kickMemberFromGroup(member, group, targetMember);
 	}
 }

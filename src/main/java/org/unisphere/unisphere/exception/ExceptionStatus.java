@@ -20,6 +20,7 @@ public enum ExceptionStatus {
 	NOT_GROUP_MEMBER(HttpStatus.NOT_FOUND, "그룹에 가입되어 있지 않거나 가입 요청이 처리 중입니다."),
 	ALREADY_GROUP_ADMIN(HttpStatus.CONFLICT, "이미 그룹 관리자입니다."),
 	ALREADY_GROUP_OWNER(HttpStatus.CONFLICT, "이미 그룹 소유자입니다."),
+	CANNOT_KICK_HIGHER_RANK_MEMBER(HttpStatus.FORBIDDEN, "자신보다 높거나 같은 등급의 그룹 회원을 추방할 수 없습니다."),
 
 	//	Image
 	NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다."),

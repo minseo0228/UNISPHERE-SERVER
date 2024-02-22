@@ -282,12 +282,9 @@ public class GroupController {
 	// 초대 코드로 단체 가입
 	// POST /api/v1/groups/{groupId}/members/{memberId}/accept?code={code} (pending)
 
-	// 특정 회원을 단체에서 추방
-	// DELETE /api/v1/groups/{groupId}/members/{memberId}/kick (pending)
 	@Operation(
 			summary = "단체에서 회원 추방",
-			description = "특정 단체에서 특정 회원을 추방합니다. 단체 관리자 이상의 등급만 호출할 수 있으며 자신보다 등급이 높거나 같은 대상에게는 호출할 수 없습니다.",
-			deprecated = true
+			description = "특정 단체에서 특정 회원을 추방합니다. 단체 관리자 이상의 등급만 호출할 수 있으며 자신보다 등급이 높거나 같은 대상에게는 호출할 수 없습니다."
 	)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "204", description = "no content")
@@ -300,5 +297,7 @@ public class GroupController {
 			@PathVariable("groupId") Long groupId,
 			@PathVariable("memberId") Long targetMemberId
 	) {
+		groupFacadeService.kickMemberFromGroup(memberSessionDto.getMemberId(), groupId,
+				targetMemberId);
 	}
 }

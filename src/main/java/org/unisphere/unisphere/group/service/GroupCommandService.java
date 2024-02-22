@@ -174,7 +174,11 @@ public class GroupCommandService {
 	}
 
 	/**
-	 * 그룹 탈퇴
+	 * // @formatter:off
+	 * 그룹에서 탈퇴합니다. 단체 소유자인 경우, 소유자를 관리자 중 가장 오래된 회원으로 임명합니다.
+	 * 단체 관리자가 없는 경우, 일반 회원 중 가장 오래된 회원을 소유자로 임명합니다.
+	 * 혼자 남은 경우, 단체 삭제합니다.
+	 * // @formatter:on
 	 *
 	 * @param member 그룹에서 탈퇴할 멤버
 	 * @param group  탈퇴할 그룹
@@ -184,9 +188,6 @@ public class GroupCommandService {
 				.findByGroupIdAndMemberId(group.getId(), member.getId())
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
 
-//		단체 소유자인 경우, 소유자를 관리자 중 가장 오래된 회원으로 임명.
-//		단체 관리자가 없는 경우, 일반 회원 중 가장 오래된 회원을 소유자로 임명.
-//		혼자 남은 경우, 단체 삭제.
 		if (groupRegistration.getRole() == GroupRole.OWNER) {
 			groupRegistrationRepository
 					.findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(group.getId(),
@@ -206,5 +207,34 @@ public class GroupCommandService {
 			group.unRegisterMember(member);
 			groupRepository.save(group);
 		}
+	}
+
+	/**
+	 * // @formatter:off
+	 * 그룹에서 멤버 추방합니다. 그룹 소유자는 자신을 제외한 모든 멤버를 추방할 수 있습니다.
+	 * 그룹 관리자는 일반 멤버를 추방할 수 있습니다.
+	 * 추방된 멤버는 그룹에서 탈퇴됩니다.
+	 * // @formatter:on
+	 *
+	 * @param member       그룹 관리자 or 소유자
+	 * @param group        그룹
+	 * @param targetMember 추방할 멤버
+	 */
+	public void kickMemberFromGroup(Member member, Group group, Member targetMember) {
+		GroupRegistration targetRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+
+		if (member.equals(group.getOwnerMember())) {
+			if (targetRegistration.getRole() == GroupRole.OWNER) {
+				throw ExceptionStatus.CANNOT_KICK_HIGHER_RANK_MEMBER.toServiceException();
+			}
+		} else {
+			if (targetRegistration.getRole() == GroupRole.OWNER
+					|| targetRegistration.getRole() == GroupRole.ADMIN) {
+				throw ExceptionStatus.CANNOT_KICK_HIGHER_RANK_MEMBER.toServiceException();
+			}
+		}
+		groupRegistrationRepository.delete(targetRegistration);
 	}
 }

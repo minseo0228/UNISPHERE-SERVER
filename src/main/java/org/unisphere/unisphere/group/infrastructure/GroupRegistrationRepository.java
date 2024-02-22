@@ -1,5 +1,6 @@
 package org.unisphere.unisphere.group.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +32,8 @@ public interface GroupRegistrationRepository extends JpaRepository<GroupRegistra
 			Long groupId,
 			GroupRole role
 	);
+
+	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.role in :roles and gr.registeredAt != null")
+	List<GroupRegistration> findAllByGroupIdAndRoleAndRegisteredAtNotNull(Long groupId,
+			List<GroupRole> roles);
 }

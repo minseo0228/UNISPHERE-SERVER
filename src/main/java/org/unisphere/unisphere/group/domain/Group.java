@@ -97,20 +97,8 @@ public class Group {
 		}
 	}
 
-	public boolean isOwner(Member member) {
+	public boolean isGroupOwner(Member member) {
 		return this.ownerMember.equals(member);
-	}
-
-	public boolean isGroupAdmin(Member member) {
-		return isOwner(member) ||
-				this.groupRegistrations.stream()
-						.anyMatch(groupRegistration -> groupRegistration.getMember().equals(member)
-								&& groupRegistration.getRole().equals(GroupRole.ADMIN));
-	}
-
-	public boolean isGroupMember(Member member) {
-		return this.groupRegistrations.stream()
-				.anyMatch(groupRegistration -> groupRegistration.getMember().equals(member));
 	}
 
 	public void putHomePage(String preSignedLogoImageUrl, String content, String email,

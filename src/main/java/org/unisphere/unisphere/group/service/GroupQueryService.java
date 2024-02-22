@@ -1,6 +1,8 @@
 package org.unisphere.unisphere.group.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,7 @@ import org.unisphere.unisphere.annotation.Logging;
 import org.unisphere.unisphere.exception.ExceptionStatus;
 import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
+import org.unisphere.unisphere.group.domain.GroupRole;
 import org.unisphere.unisphere.group.infrastructure.GroupRegistrationRepository;
 import org.unisphere.unisphere.group.infrastructure.GroupRepository;
 import org.unisphere.unisphere.member.domain.Member;
@@ -74,5 +77,45 @@ public class GroupQueryService {
 	public Group getGroup(Long groupId) {
 		Optional<Group> group = groupRepository.findById(groupId);
 		return group.orElseThrow(ExceptionStatus.NOT_FOUND_GROUP::toServiceException);
+	}
+
+	/**
+	 * 그룹의 소유자 정보 조회
+	 *
+	 * @param groupId 그룹 ID return 그룹의 소유자 정보
+	 */
+	public Member findGroupOwner(Long groupId) {
+		return groupRegistrationRepository.findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(
+						groupId, GroupRole.OWNER)
+				.orElseThrow(ExceptionStatus.NOT_FOUND_MEMBER::toServiceException)
+				.getMember();
+	}
+
+	/**
+	 * 그룹의 관리자 정보 조회
+	 *
+	 * @param groupId 그룹 ID
+	 * @return 그룹의 관리자 정보
+	 */
+	public List<Member> findGroupAdmins(Long groupId) {
+		return groupRegistrationRepository.findAllByGroupIdAndRoleAndRegisteredAtNotNull(
+						groupId, List.of(GroupRole.ADMIN, GroupRole.OWNER))
+				.stream()
+				.map(GroupRegistration::getMember)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * 그룹의 회원 정보 조회
+	 *
+	 * @param groupId 그룹 ID
+	 * @return 그룹의 회원 정보
+	 */
+	public List<Member> findGroupMembers(Long groupId) {
+		return groupRegistrationRepository.findAllByGroupIdAndRoleAndRegisteredAtNotNull(
+						groupId, List.of(GroupRole.COMMON, GroupRole.ADMIN, GroupRole.OWNER))
+				.stream()
+				.map(GroupRegistration::getMember)
+				.collect(Collectors.toList());
 	}
 }
