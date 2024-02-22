@@ -139,4 +139,28 @@ public class GroupCommandService {
 		groupRegistration.appointAdmin();
 		groupRegistrationRepository.save(groupRegistration);
 	}
+
+	/**
+	 * 그룹 소유자 임명
+	 *
+	 * @param group        그룹
+	 * @param targetMember 소유자로 임명할 멤버
+	 */
+	public void appointGroupOwner(Group group, Member targetMember) {
+		GroupRegistration ownerRegistration = groupRegistrationRepository.findByRole(
+						GroupRole.OWNER)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_OWNER::toServiceException);
+		GroupRegistration targetRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (targetRegistration.getRole() == GroupRole.OWNER) {
+			throw ExceptionStatus.ALREADY_GROUP_OWNER.toServiceException();
+		}
+		ownerRegistration.appointAdmin();
+		targetRegistration.appointOwner();
+		groupRegistrationRepository.save(ownerRegistration);
+		groupRegistrationRepository.save(targetRegistration);
+		group.setOwnerMember(targetMember);
+		groupRepository.save(group);
+	}
 }

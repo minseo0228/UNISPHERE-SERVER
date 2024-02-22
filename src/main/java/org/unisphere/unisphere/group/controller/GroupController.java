@@ -209,7 +209,7 @@ public class GroupController {
 				targetMemberId);
 	}
 
-	@Operation(summary = "단체 관리자 임명", description = "특정 회원을 단체 관리자로 임명합니다. 단체 생성자만 호출할 수 있습니다.")
+	@Operation(summary = "단체 관리자 임명", description = "특정 회원을 단체 관리자로 임명합니다. 단체 소유자만 호출할 수 있습니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok")
 	})
@@ -224,11 +224,46 @@ public class GroupController {
 				targetMemberId);
 	}
 
+	@Operation(
+			summary = "단체 소유자 위임",
+			description = "특정 단체의 소유자를 변경합니다. 단체 소유자만 호출할 수 있습니다."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "ok")
+	})
+	@PatchMapping(value = "/{groupId}/members/{memberId}/owner/appoint")
+	@Secured(MemberRole.S_USER)
+	public void appointGroupOwner(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@PathVariable("groupId") Long groupId,
+			@PathVariable("memberId") Long targetMemberId
+	) {
+		groupFacadeService.appointGroupOwner(memberSessionDto.getMemberId(), groupId,
+				targetMemberId);
+	}
+
+	@Operation(
+			summary = "단체 삭제",
+			description = "특정 단체를 삭제합니다. 단체 소유자만 호출할 수 있습니다."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "no content")
+	})
+	@DeleteMapping(value = "/{groupId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Secured(MemberRole.S_USER)
+	public void deleteGroup(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@PathVariable("groupId") Long groupId
+	) {
+//		groupFacadeService.deleteGroup(memberSessionDto.getMemberId(), groupId);
+	}
+
 	// 단체 탈퇴
 	// DELETE /api/v1/groups/{groupId}/unregister (pending)
 	@Operation(
 			summary = "단체 탈퇴",
-			description = "특정 단체를 떠납니다. 단체 생성자가 요청하면 생성자를 다른 단체 관리자나 단체 회원에게 위임하고, 혼자 남아있는 상태에서 요청한 경우에는 단체가 삭제됩니다.",
+			description = "특정 단체를 떠납니다. 단체 소유자가 요청하면 소유자를 다른 단체 관리자나 단체 회원에게 위임하고, 혼자 남아있는 상태에서 요청한 경우에는 단체가 삭제됩니다.",
 			deprecated = true
 	)
 	@ApiResponses(value = {

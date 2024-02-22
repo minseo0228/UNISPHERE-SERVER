@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
+import org.unisphere.unisphere.group.domain.GroupRole;
 
 public interface GroupRegistrationRepository extends JpaRepository<GroupRegistration, Long> {
 
@@ -17,4 +18,7 @@ public interface GroupRegistrationRepository extends JpaRepository<GroupRegistra
 
 	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.member.id = :memberId")
 	Optional<GroupRegistration> findByGroupIdAndMemberId(Long groupId, Long memberId);
+
+	@Query("select gr from group_registration gr where gr.role = :role")
+	Optional<GroupRegistration> findByRole(GroupRole role);
 }

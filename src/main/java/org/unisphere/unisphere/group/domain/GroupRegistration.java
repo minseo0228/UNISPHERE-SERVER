@@ -69,4 +69,8 @@ public class GroupRegistration {
 	public void appointAdmin() {
 		this.role = GroupRole.ADMIN;
 	}
+
+	public void appointOwner() {
+		this.role = GroupRole.OWNER;
+	}
 }
