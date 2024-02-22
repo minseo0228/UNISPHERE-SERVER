@@ -32,7 +32,7 @@ public class GroupFacadeService {
 	private final GroupCommandService groupCommandService;
 	private final MemberQueryService memberQueryService;
 	private final GroupMapper groupMapper;
-	private ImageService imageService;
+	private final ImageService imageService;
 
 	@Transactional(readOnly = true)
 	public GroupListResponseDto getAllGroups(Pageable pageable) {
@@ -97,7 +97,7 @@ public class GroupFacadeService {
 		if (!group.isOwner(member)) {
 			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
 		}
-		String imageUrl = imageService.findImageUrl(
+		String imageUrl = imageService.getImageUrl(
 				groupAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());
 		groupCommandService.updateGroupAvatar(group, groupAvatarUpdateRequestDto);
 		return groupMapper.toGroupAvatarResponseDto(group, imageUrl);

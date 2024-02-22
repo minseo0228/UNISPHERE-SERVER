@@ -37,12 +37,14 @@ public class GroupCommandService {
 			throw ExceptionStatus.ALREADY_EXIST_GROUP_NAME.toServiceException();
 		}
 		LocalDateTime now = LocalDateTime.now();
+		String imageUrl = imageService.getImageUrl(
+				groupCreateRequestDto.getPreSignedLogoImageUrl());
 		Group group = Group.createGroup(
 				now,
 				member,
 				groupCreateRequestDto.getName(),
 				groupCreateRequestDto.getSummary(),
-				imageService.findImageUrl(groupCreateRequestDto.getPreSignedLogoImageUrl())
+				imageUrl
 		);
 		groupRepository.save(group);
 		GroupRegistration groupRegistration = GroupRegistration.of(

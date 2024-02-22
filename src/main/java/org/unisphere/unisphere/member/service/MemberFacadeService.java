@@ -32,7 +32,7 @@ public class MemberFacadeService {
 	public MyAvatarResponseDto updateMemberAvatar(Long memberId,
 			MyAvatarUpdateRequestDto myAvatarUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
-		String imageUrl = imageService.findImageUrl(
+		String imageUrl = imageService.getImageUrl(
 				myAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());
 		memberCommandService.updateAvatar(member, myAvatarUpdateRequestDto.getNickname(),
 				myAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());

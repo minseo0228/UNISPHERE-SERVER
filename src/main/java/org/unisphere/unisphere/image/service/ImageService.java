@@ -43,11 +43,22 @@ public class ImageService {
 		return awsS3Manager.getPreSignedUrl(imageUrl);
 	}
 
+	public String getImageUrl(String imageUrl) {
+		if (Objects.isNull(imageUrl) || imageUrl.isBlank()) {
+			return null;
+		}
+		return awsS3Manager.getObjectUrl(imageUrl);
+	}
+
 	public String findImageUrl(String imageUrl) {
 		if (Objects.isNull(imageUrl) || imageUrl.isBlank()) {
 			return null;
 		}
-		return awsS3Manager.findObjectUrl(imageUrl);
+		try {
+			return awsS3Manager.getObjectUrl(imageUrl);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private List<String> getValidDirNameList() {
