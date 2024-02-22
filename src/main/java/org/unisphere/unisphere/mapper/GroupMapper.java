@@ -5,6 +5,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.dto.GroupPreviewDto;
+import org.unisphere.unisphere.group.dto.response.GroupAvatarResponseDto;
 import org.unisphere.unisphere.group.dto.response.GroupListResponseDto;
 
 @Mapper(componentModel = "spring")
@@ -19,4 +20,7 @@ public interface GroupMapper {
 	@Mapping(source = "groupPreviewDtos", target = "groups")
 	GroupListResponseDto toGroupListResponseDto(List<GroupPreviewDto> groupPreviewDtos,
 			long totalElements);
+
+	@Mapping(source = "group.id", target = "groupId")
+	GroupAvatarResponseDto toGroupAvatarResponseDto(Group group, String avatarImageUrl);
 }

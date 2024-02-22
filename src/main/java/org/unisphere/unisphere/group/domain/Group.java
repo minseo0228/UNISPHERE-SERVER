@@ -75,4 +75,17 @@ public class Group {
 		group.logoImageUrl = logoImageUrl;
 		return group;
 	}
+
+	public void updateAvatar(String name, String preSignedAvatarImageUrl) {
+		if (name != null && !name.isEmpty()) {
+			this.name = name;
+		}
+		if (preSignedAvatarImageUrl != null && !preSignedAvatarImageUrl.isEmpty()) {
+			this.avatarImageUrl = preSignedAvatarImageUrl;
+		}
+	}
+
+	public boolean isOwner(Member member) {
+		return this.ownerMember.equals(member);
+	}
 }

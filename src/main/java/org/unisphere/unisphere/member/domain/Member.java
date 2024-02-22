@@ -92,10 +92,10 @@ public class Member {
 	}
 
 	public void updateAvatar(String nickname, String preSignedAvatarImageUrl) {
-		if (nickname != null) {
+		if (nickname != null && !nickname.isEmpty()) {
 			this.nickname = nickname;
 		}
-		if (preSignedAvatarImageUrl != null) {
+		if (preSignedAvatarImageUrl != null && !preSignedAvatarImageUrl.isEmpty()) {
 			this.avatarImageUrl = preSignedAvatarImageUrl;
 		}
 	}

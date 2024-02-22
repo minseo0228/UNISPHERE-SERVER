@@ -12,12 +12,13 @@ public enum ExceptionStatus {
 
 	//	Group
 	ALREADY_EXIST_GROUP_NAME(HttpStatus.CONFLICT, "이미 존재하는 그룹 이름입니다."),
+	NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "그룹이 존재하지 않습니다."),
+	NOT_GROUP_OWNER(HttpStatus.FORBIDDEN, "그룹의 소유자가 아닙니다."),
 
 	//	Image
 	NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다."),
 	FAILED_TO_DELETE_IMAGE(HttpStatus.BAD_GATEWAY, "이미지 삭제에 실패했습니다. 다시 시도해주세요."),
 	;
-
 	private final int status;
 	private final String message;
 	private final String reason;

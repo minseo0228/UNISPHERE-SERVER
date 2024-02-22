@@ -8,6 +8,7 @@ import org.unisphere.unisphere.annotation.Logging;
 import org.unisphere.unisphere.exception.ExceptionStatus;
 import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
+import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
 import org.unisphere.unisphere.group.infrastructure.GroupRegistrationRepository;
 import org.unisphere.unisphere.group.infrastructure.GroupRepository;
@@ -41,7 +42,7 @@ public class GroupCommandService {
 				member,
 				groupCreateRequestDto.getName(),
 				groupCreateRequestDto.getSummary(),
-				imageService.getImageUrl(groupCreateRequestDto.getPreSignedLogoImageUrl())
+				imageService.findImageUrl(groupCreateRequestDto.getPreSignedLogoImageUrl())
 		);
 		groupRepository.save(group);
 		GroupRegistration groupRegistration = GroupRegistration.of(
@@ -50,5 +51,14 @@ public class GroupCommandService {
 				group
 		);
 		groupRegistrationRepository.save(groupRegistration);
+	}
+
+	public void updateGroupAvatar(Group group,
+			GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto) {
+		group.updateAvatar(
+				groupAvatarUpdateRequestDto.getName(),
+				groupAvatarUpdateRequestDto.getPreSignedAvatarImageUrl()
+		);
+		groupRepository.save(group);
 	}
 }

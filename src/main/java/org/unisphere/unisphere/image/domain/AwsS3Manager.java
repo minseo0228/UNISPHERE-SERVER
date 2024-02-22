@@ -33,9 +33,9 @@ public class AwsS3Manager {
 		}
 	}
 
-	public String getObjectUrl(String key) {
+	public String findObjectUrl(String key) {
 		if (!doesObjectExist(key)) {
-			throw ExceptionStatus.NOT_FOUND_IMAGE.toDomainException();
+			return null;
 		}
 		return amazonS3Client.getUrl(bucketName, key).toString();
 	}

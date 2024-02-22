@@ -70,9 +70,6 @@ public class GroupController {
 				PageRequest.of(page, size));
 	}
 
-
-	// 특정 회원이 속한 단체 목록 조회
-	// GET /api/v1/groups/members/{memberId}?page={page}&size={size} (pending)
 	@Operation(summary = "특정 회원이 속한 단체 목록 조회", description = "특정 회원이 속한 단체 목록을 조회합니다.", deprecated = true)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
@@ -80,16 +77,13 @@ public class GroupController {
 	@GetMapping(value = "/members/{memberId}")
 	@Secured(MemberRole.S_USER)
 	public GroupListResponseDto getMemberGroups(
-			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("memberId") Long targetMemberId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		return GroupListResponseDto.builder().build();
+		return groupFacadeService.getMemberGroups(targetMemberId, PageRequest.of(page, size));
 	}
 
-	// 특정 단체 아바타 조회
-	// GET /api/v1/groups/{groupId}/avatar
 	@Operation(summary = "특정 단체 아바타 조회", description = "특정 단체 아바타를 조회합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
@@ -97,14 +91,11 @@ public class GroupController {
 	@GetMapping(value = "/{groupId}/avatar")
 	@Secured(MemberRole.S_USER)
 	public GroupAvatarResponseDto getGroupAvatar(
-			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		return GroupAvatarResponseDto.builder().build();
+		return groupFacadeService.getGroupAvatar(groupId);
 	}
 
-	// 특정 단체 아바타 편집
-	// PATCH /api/v1/groups/{groupId}/avatar
 	@Operation(summary = "특정 단체 아바타 편집", description = "특정 단체 아바타를 편집합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
@@ -114,9 +105,10 @@ public class GroupController {
 	public GroupAvatarResponseDto updateGroupAvatar(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId,
-			@RequestBody GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto
+			@Valid @RequestBody GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto
 	) {
-		return GroupAvatarResponseDto.builder().build();
+		return groupFacadeService.updateGroupAvatar(memberSessionDto.getMemberId(), groupId,
+				groupAvatarUpdateRequestDto);
 	}
 
 	// 특정 단체의 홈피 정보 조회
