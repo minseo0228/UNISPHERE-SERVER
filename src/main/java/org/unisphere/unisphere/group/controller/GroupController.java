@@ -209,6 +209,20 @@ public class GroupController {
 				targetMemberId);
 	}
 
+	@Operation(summary = "단체 관리자 임명", description = "특정 회원을 단체 관리자로 임명합니다. 단체 생성자만 호출할 수 있습니다.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "ok")
+	})
+	@PatchMapping(value = "/{groupId}/members/{memberId}/admin/appoint")
+	@Secured(MemberRole.S_USER)
+	public void appointGroupAdmin(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@PathVariable("groupId") Long groupId,
+			@PathVariable("memberId") Long targetMemberId
+	) {
+		groupFacadeService.appointGroupAdmin(memberSessionDto.getMemberId(), groupId,
+				targetMemberId);
+	}
 
 	// 단체 탈퇴
 	// DELETE /api/v1/groups/{groupId}/unregister (pending)

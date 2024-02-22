@@ -121,4 +121,22 @@ public class GroupCommandService {
 		groupRegistration.approve();
 		groupRegistrationRepository.save(groupRegistration);
 	}
+
+	/**
+	 * 그룹 관리자 임명
+	 *
+	 * @param group        그룹
+	 * @param targetMember 관리자로 임명할 멤버
+	 */
+	public void appointGroupAdmin(Group group, Member targetMember) {
+		GroupRegistration groupRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (groupRegistration.getRole() == GroupRole.ADMIN
+				|| groupRegistration.getRole() == GroupRole.OWNER) {
+			throw ExceptionStatus.ALREADY_GROUP_ADMIN.toServiceException();
+		}
+		groupRegistration.appointAdmin();
+		groupRegistrationRepository.save(groupRegistration);
+	}
 }

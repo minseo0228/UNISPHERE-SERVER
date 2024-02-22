@@ -18,6 +18,7 @@ public enum ExceptionStatus {
 	ALREADY_GROUP_MEMBER(HttpStatus.CONFLICT, "이미 그룹에 가입되어 있거나 가입 요청이 처리 중입니다."),
 	ALREADY_APPROVED_MEMBER(HttpStatus.CONFLICT, "이미 가입 승인된 회원입니다."),
 	NOT_GROUP_MEMBER(HttpStatus.NOT_FOUND, "그룹에 가입되어 있지 않습니다."),
+	ALREADY_GROUP_ADMIN(HttpStatus.CONFLICT, "이미 그룹 관리자입니다."),
 
 	//	Image
 	NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다."),

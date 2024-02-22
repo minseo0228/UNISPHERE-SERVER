@@ -65,4 +65,8 @@ public class GroupRegistration {
 	public void approve() {
 		this.registeredAt = LocalDateTime.now();
 	}
+
+	public void appointAdmin() {
+		this.role = GroupRole.ADMIN;
+	}
 }
