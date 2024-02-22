@@ -17,7 +17,7 @@ public enum ExceptionStatus {
 	NOT_GROUP_ADMIN(HttpStatus.FORBIDDEN, "그룹의 관리자가 아닙니다."),
 	ALREADY_GROUP_MEMBER(HttpStatus.CONFLICT, "이미 그룹에 가입되어 있거나 가입 요청이 처리 중입니다."),
 	ALREADY_APPROVED_MEMBER(HttpStatus.CONFLICT, "이미 가입 승인된 회원입니다."),
-	NOT_GROUP_MEMBER(HttpStatus.NOT_FOUND, "그룹에 가입되어 있지 않습니다."),
+	NOT_GROUP_MEMBER(HttpStatus.NOT_FOUND, "그룹에 가입되어 있지 않거나 가입 요청이 처리 중입니다."),
 	ALREADY_GROUP_ADMIN(HttpStatus.CONFLICT, "이미 그룹 관리자입니다."),
 	ALREADY_GROUP_OWNER(HttpStatus.CONFLICT, "이미 그룹 소유자입니다."),
 

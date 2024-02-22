@@ -130,7 +130,7 @@ public class GroupCommandService {
 	 */
 	public void appointGroupAdmin(Group group, Member targetMember) {
 		GroupRegistration groupRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.findByGroupIdAndMemberIdAndRegisteredAtNotNull(group.getId(), targetMember.getId())
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
 		if (groupRegistration.getRole() == GroupRole.ADMIN
 				|| groupRegistration.getRole() == GroupRole.OWNER) {
@@ -151,7 +151,7 @@ public class GroupCommandService {
 						GroupRole.OWNER)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_OWNER::toServiceException);
 		GroupRegistration targetRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.findByGroupIdAndMemberIdAndRegisteredAtNotNull(group.getId(), targetMember.getId())
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
 		if (targetRegistration.getRole() == GroupRole.OWNER) {
 			throw ExceptionStatus.ALREADY_GROUP_OWNER.toServiceException();
@@ -171,5 +171,40 @@ public class GroupCommandService {
 	 */
 	public void deleteGroup(Group group) {
 		groupRepository.delete(group);
+	}
+
+	/**
+	 * 그룹 탈퇴
+	 *
+	 * @param member 그룹에서 탈퇴할 멤버
+	 * @param group  탈퇴할 그룹
+	 */
+	public void unregisterGroup(Member member, Group group) {
+		GroupRegistration groupRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), member.getId())
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+
+//		단체 소유자인 경우, 소유자를 관리자 중 가장 오래된 회원으로 임명.
+//		단체 관리자가 없는 경우, 일반 회원 중 가장 오래된 회원을 소유자로 임명.
+//		혼자 남은 경우, 단체 삭제.
+		if (groupRegistration.getRole() == GroupRole.OWNER) {
+			groupRegistrationRepository
+					.findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(group.getId(),
+							GroupRole.ADMIN)
+					.or(() -> groupRegistrationRepository.findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(
+							group.getId(), GroupRole.COMMON))
+					.ifPresentOrElse(oldestAdminOrCommonRegistration -> {
+						oldestAdminOrCommonRegistration.appointOwner();
+						group.setOwnerMember(oldestAdminOrCommonRegistration.getMember());
+						groupRegistrationRepository.save(oldestAdminOrCommonRegistration);
+						groupRegistrationRepository.delete(groupRegistration);
+						group.unRegisterMember(member);
+						groupRepository.save(group);
+					}, () -> groupRepository.delete(group));
+		} else {
+			groupRegistrationRepository.delete(groupRegistration);
+			group.unRegisterMember(member);
+			groupRepository.save(group);
+		}
 	}
 }

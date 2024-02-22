@@ -209,4 +209,14 @@ public class GroupFacadeService {
 		}
 		groupCommandService.deleteGroup(group);
 	}
+
+	@Transactional
+	public void unregisterGroup(Long memberId, Long groupId) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (!group.isGroupMember(member)) {
+			throw ExceptionStatus.NOT_GROUP_MEMBER.toServiceException();
+		}
+		groupCommandService.unregisterGroup(member, group);
+	}
 }

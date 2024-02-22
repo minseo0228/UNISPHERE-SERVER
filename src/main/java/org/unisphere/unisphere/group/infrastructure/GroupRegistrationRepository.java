@@ -19,6 +19,16 @@ public interface GroupRegistrationRepository extends JpaRepository<GroupRegistra
 	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.member.id = :memberId")
 	Optional<GroupRegistration> findByGroupIdAndMemberId(Long groupId, Long memberId);
 
+	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.member.id = :memberId and gr.registeredAt is not null")
+	Optional<GroupRegistration> findByGroupIdAndMemberIdAndRegisteredAtNotNull(Long groupId,
+			Long memberId);
+
 	@Query("select gr from group_registration gr where gr.role = :role")
 	Optional<GroupRegistration> findByRole(GroupRole role);
+
+	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.role = :role and gr.registeredAt != null order by gr.registeredAt asc")
+	Optional<GroupRegistration> findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(
+			Long groupId,
+			GroupRole role
+	);
 }

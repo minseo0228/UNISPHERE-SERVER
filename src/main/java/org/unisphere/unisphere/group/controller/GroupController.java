@@ -259,12 +259,9 @@ public class GroupController {
 		groupFacadeService.deleteGroup(memberSessionDto.getMemberId(), groupId);
 	}
 
-	// 단체 탈퇴
-	// DELETE /api/v1/groups/{groupId}/unregister (pending)
 	@Operation(
 			summary = "단체 탈퇴",
-			description = "특정 단체를 떠납니다. 단체 소유자가 요청하면 소유자를 다른 단체 관리자나 단체 회원에게 위임하고, 혼자 남아있는 상태에서 요청한 경우에는 단체가 삭제됩니다.",
-			deprecated = true
+			description = "특정 단체를 떠납니다. 단체 소유자가 요청하면 소유자를 다른 단체 관리자나 단체 회원에게 위임하고, 혼자 남아있는 상태에서 요청한 경우에는 단체가 삭제됩니다."
 	)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "204", description = "no content")
@@ -276,6 +273,7 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
+		groupFacadeService.unregisterGroup(memberSessionDto.getMemberId(), groupId);
 	}
 
 	// 특정 회원을 단체에 초대
