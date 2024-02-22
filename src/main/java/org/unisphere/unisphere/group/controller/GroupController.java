@@ -138,21 +138,18 @@ public class GroupController {
 				groupHomePageUpdateRequestDto);
 	}
 
-	// 특정 단체의 속한 회원 목록 조회
-	// GET /api/v1/groups/{groupId}/members?page={page}&size={size} (pending)
-	@Operation(summary = "특정 단체의 속한 회원 목록 조회", description = "특정 단체의 속한 회원 목록을 조회합니다.", deprecated = true)
+	@Operation(summary = "특정 단체에 속한 회원 목록 조회", description = "특정 단체의 속한 회원 목록을 조회합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
 	})
 	@GetMapping(value = "/{groupId}/members")
 	@Secured(MemberRole.S_USER)
 	public GroupMemberListResponseDto getGroupMembers(
-			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size
 	) {
-		return GroupMemberListResponseDto.builder().build();
+		return groupFacadeService.getGroupMembers(groupId, PageRequest.of(page, size));
 	}
 
 	@Operation(summary = "단체 생성 요청", description = "단체를 생성을 요청합니다. 유니스피어 관리자의 승인이 필요합니다.")

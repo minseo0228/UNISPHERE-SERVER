@@ -12,6 +12,7 @@ import org.unisphere.unisphere.annotation.Logging;
 import org.unisphere.unisphere.exception.ExceptionStatus;
 import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
+import org.unisphere.unisphere.group.dto.GroupMemberDto;
 import org.unisphere.unisphere.group.dto.GroupPreviewDto;
 import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
@@ -19,6 +20,7 @@ import org.unisphere.unisphere.group.dto.request.GroupHomePageUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.response.GroupAvatarResponseDto;
 import org.unisphere.unisphere.group.dto.response.GroupHomePageResponseDto;
 import org.unisphere.unisphere.group.dto.response.GroupListResponseDto;
+import org.unisphere.unisphere.group.dto.response.GroupMemberListResponseDto;
 import org.unisphere.unisphere.image.service.ImageService;
 import org.unisphere.unisphere.log.LogLevel;
 import org.unisphere.unisphere.mapper.GroupMapper;
@@ -41,21 +43,22 @@ public class GroupFacadeService {
 		Page<Group> groups = groupQueryService.findAllGroups(pageable);
 		List<GroupPreviewDto> groupPreviewDtos = groups.stream()
 				.sorted(Comparator.comparing(Group::getName))
-				.map(groupMapper::toGroupPreviewDto)
+				.map(group -> groupMapper.toGroupPreviewDto(group,
+						imageService.findImageUrl(group.getLogoImageUrl())))
 				.collect(Collectors.toList());
 		return groupMapper.toGroupListResponseDto(groupPreviewDtos, groups.getTotalElements());
 	}
 
 	@Transactional(readOnly = true)
 	public GroupListResponseDto getMyGroups(Long memberId, Pageable pageable) {
-		Member member = memberQueryService.getMember(memberId);
-		Page<GroupRegistration> groupRegistrations = groupQueryService.findMemberGroups(member,
+		Page<GroupRegistration> groupRegistrations = groupQueryService.findMemberGroups(memberId,
 				pageable);
 		List<GroupPreviewDto> groupPreviewDtos = groupRegistrations.stream()
 				.sorted(Comparator.comparing(
 						groupRegistration -> groupRegistration.getGroup().getName()))
 				.map(groupRegistration -> groupMapper.toGroupPreviewDto(
-						groupRegistration.getGroup()))
+						groupRegistration.getGroup(), imageService.findImageUrl(
+								groupRegistration.getGroup().getLogoImageUrl())))
 				.collect(Collectors.toList());
 		return groupMapper.toGroupListResponseDto(groupPreviewDtos,
 				groupRegistrations.getTotalElements());
@@ -63,16 +66,34 @@ public class GroupFacadeService {
 
 	@Transactional(readOnly = true)
 	public GroupListResponseDto getMemberGroups(Long memberId, Pageable pageable) {
-		Member member = memberQueryService.getMember(memberId);
-		Page<GroupRegistration> groupRegistrations = groupQueryService.findMemberGroups(member,
+		Page<GroupRegistration> groupRegistrations = groupQueryService.findMemberGroups(memberId,
 				pageable);
 		List<GroupPreviewDto> groupPreviewDtos = groupRegistrations.stream()
 				.sorted(Comparator.comparing(
 						groupRegistration -> groupRegistration.getGroup().getName()))
 				.map(groupRegistration -> groupMapper.toGroupPreviewDto(
-						groupRegistration.getGroup()))
+						groupRegistration.getGroup(), imageService.findImageUrl(
+								groupRegistration.getGroup().getLogoImageUrl())))
 				.collect(Collectors.toList());
 		return groupMapper.toGroupListResponseDto(groupPreviewDtos,
+				groupRegistrations.getTotalElements());
+	}
+
+	@Transactional(readOnly = true)
+	public GroupMemberListResponseDto getGroupMembers(Long groupId, Pageable pageable) {
+		Page<GroupRegistration> groupRegistrations = groupQueryService.findGroupMembers(groupId,
+				pageable);
+		List<GroupMemberDto> groupMemberDtos = groupRegistrations.stream()
+				.sorted(Comparator.comparing(
+						groupRegistration -> groupRegistration.getMember().getNickname()))
+				.map(groupRegistration -> groupMapper.toGroupMemberDto(
+						groupRegistration.getMember(),
+						imageService.findImageUrl(
+								groupRegistration.getMember().getAvatarImageUrl()),
+						groupRegistration.getRole()
+				))
+				.collect(Collectors.toList());
+		return groupMapper.toGroupMemberListResponseDto(groupMemberDtos,
 				groupRegistrations.getTotalElements());
 	}
 

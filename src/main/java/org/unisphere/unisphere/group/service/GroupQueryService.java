@@ -34,13 +34,25 @@ public class GroupQueryService {
 	/**
 	 * 회원이 속한 그룹 정보 조회
 	 *
-	 * @param member   회원
+	 * @param memberId 회원 ID
 	 * @param pageable 페이징 정보
 	 * @return 회원이 속한 그룹 정보 (Page)
 	 */
-	public Page<GroupRegistration> findMemberGroups(Member member, Pageable pageable) {
+	public Page<GroupRegistration> findMemberGroups(Long memberId, Pageable pageable) {
 		return groupRegistrationRepository.findAllByMemberId(
-				member.getId(), pageable);
+				memberId, pageable);
+	}
+
+	/**
+	 * 그룹에 속한 회원 정보 조회
+	 *
+	 * @param groupId  그룹 ID
+	 * @param pageable 페이징 정보
+	 * @return 그룹에 속한 회원 정보 (Page)
+	 */
+	public Page<GroupRegistration> findGroupMembers(Long groupId, Pageable pageable) {
+		return groupRegistrationRepository.findAllByGroupId(
+				groupId, pageable);
 	}
 
 	/**
