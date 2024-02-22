@@ -64,6 +64,18 @@ public class Group {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Member ownerMember;
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Group group = (Group) o;
+		return getId().equals(group.getId());
+	}
+
 	public static Group createGroup(LocalDateTime now, Member member, String name, String summary,
 			String logoImageUrl) {
 		Group group = new Group();
@@ -87,6 +99,18 @@ public class Group {
 
 	public boolean isOwner(Member member) {
 		return this.ownerMember.equals(member);
+	}
+
+	public boolean isGroupAdmin(Member member) {
+		return isOwner(member) ||
+				this.groupRegistrations.stream()
+						.anyMatch(groupRegistration -> groupRegistration.getMember().equals(member)
+								&& groupRegistration.getRole().equals(GroupRole.ADMIN));
+	}
+
+	public boolean isGroupMember(Member member) {
+		return this.groupRegistrations.stream()
+				.anyMatch(groupRegistration -> groupRegistration.getMember().equals(member));
 	}
 
 	public void putHomePage(String preSignedLogoImageUrl, String content, String email,

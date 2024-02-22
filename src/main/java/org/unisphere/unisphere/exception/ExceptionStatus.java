@@ -14,6 +14,10 @@ public enum ExceptionStatus {
 	ALREADY_EXIST_GROUP_NAME(HttpStatus.CONFLICT, "이미 존재하는 그룹 이름입니다."),
 	NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "그룹이 존재하지 않습니다."),
 	NOT_GROUP_OWNER(HttpStatus.FORBIDDEN, "그룹의 소유자가 아닙니다."),
+	NOT_GROUP_ADMIN(HttpStatus.FORBIDDEN, "그룹의 관리자가 아닙니다."),
+	ALREADY_GROUP_MEMBER(HttpStatus.CONFLICT, "이미 그룹에 가입되어 있거나 가입 요청이 처리 중입니다."),
+	ALREADY_APPROVED_MEMBER(HttpStatus.CONFLICT, "이미 가입 승인된 회원입니다."),
+	NOT_GROUP_MEMBER(HttpStatus.NOT_FOUND, "그룹에 가입되어 있지 않습니다."),
 
 	//	Image
 	NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다."),

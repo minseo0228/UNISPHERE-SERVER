@@ -1,5 +1,6 @@
 package org.unisphere.unisphere.group.infrastructure;
 
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,7 @@ public interface GroupRegistrationRepository extends JpaRepository<GroupRegistra
 
 	@Query("select gr from group_registration gr where gr.group.id = :groupId")
 	Page<GroupRegistration> findAllByGroupId(Long groupId, Pageable pageable);
+
+	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.member.id = :memberId")
+	Optional<GroupRegistration> findByGroupIdAndMemberId(Long groupId, Long memberId);
 }

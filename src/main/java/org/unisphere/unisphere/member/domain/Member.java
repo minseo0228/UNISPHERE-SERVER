@@ -77,6 +77,21 @@ public class Member {
 	@Transient
 	private boolean isFirstLogin = false;
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Member member = (Member) o;
+
+		return getId().equals(member.getId()) || getEmail().equals(member.getEmail())
+				|| getNickname().equals(member.getNickname());
+	}
+
 	public static Member createSocialMember(
 			String email, String nickname, LocalDateTime now, MemberRole role,
 			String oauthId, OauthType oauthType

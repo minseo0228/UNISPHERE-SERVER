@@ -180,8 +180,6 @@ public class GroupController {
 	) {
 	}
 
-	// 단체 가입 요청
-	// POST /api/v1/groups/{groupId}/register
 	@Operation(summary = "단체 가입 요청", description = "특정 단체에 가입 요청합니다. 이미 가입한 회원은 요청할 수 없습니다. 단체 관리자의 승인이 필요합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "201", description = "created"),
@@ -189,14 +187,13 @@ public class GroupController {
 	@PostMapping(value = "/{groupId}/register")
 	@ResponseStatus(HttpStatus.CREATED)
 	@Secured(MemberRole.S_USER)
-	public void registerGroup(
+	public void requestRegisterGroup(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
+		groupFacadeService.requestRegisterGroup(memberSessionDto.getMemberId(), groupId);
 	}
 
-	// 단체 가입 승인
-	// PATCH /api/v1/groups/{groupId}/members/{memberId}/register/approve
 	@Operation(summary = "단체 가입 승인", description = "특정 회원의 단체 가입을 승인합니다. 단체 관리자만 호출할 수 있습니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok")
@@ -208,6 +205,8 @@ public class GroupController {
 			@PathVariable("groupId") Long groupId,
 			@PathVariable("memberId") Long targetMemberId
 	) {
+		groupFacadeService.approveGroupRegister(memberSessionDto.getMemberId(), groupId,
+				targetMemberId);
 	}
 
 

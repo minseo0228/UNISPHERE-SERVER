@@ -129,8 +129,8 @@ public class GroupFacadeService {
 			GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isOwner(member)) {
-			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		if (!group.isGroupAdmin(member)) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		String imageUrl = imageService.getImageUrl(
 				groupAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());
@@ -146,8 +146,8 @@ public class GroupFacadeService {
 			GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isOwner(member)) {
-			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		if (!group.isGroupAdmin(member)) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		String logoImageUrl = imageService.getImageUrl(
 				groupHomePageUpdateRequestDto.getPreSignedLogoImageUrl());
@@ -155,5 +155,26 @@ public class GroupFacadeService {
 				group.getAvatarImageUrl());
 		groupCommandService.putGroupHomePage(group, groupHomePageUpdateRequestDto);
 		return groupMapper.toGroupHomePageResponseDto(group, avatarImageUrl, logoImageUrl);
+	}
+
+	@Transactional
+	public void requestRegisterGroup(Long memberId, Long groupId) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (group.isGroupMember(member)) {
+			throw ExceptionStatus.ALREADY_GROUP_MEMBER.toServiceException();
+		}
+		groupCommandService.requestRegisterGroup(member, group);
+	}
+
+	@Transactional
+	public void approveGroupRegister(Long memberId, Long groupId, Long targetMemberId) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (!group.isGroupAdmin(member)) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
+		}
+		Member targetMember = memberQueryService.getMember(targetMemberId);
+		groupCommandService.approveGroupRegister(group, targetMember);
 	}
 }

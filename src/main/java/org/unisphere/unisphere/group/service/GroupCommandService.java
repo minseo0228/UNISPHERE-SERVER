@@ -8,6 +8,7 @@ import org.unisphere.unisphere.annotation.Logging;
 import org.unisphere.unisphere.exception.ExceptionStatus;
 import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
+import org.unisphere.unisphere.group.domain.GroupRole;
 import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupHomePageUpdateRequestDto;
@@ -48,7 +49,7 @@ public class GroupCommandService {
 				imageUrl
 		);
 		groupRepository.save(group);
-		GroupRegistration groupRegistration = GroupRegistration.of(
+		GroupRegistration groupRegistration = GroupRegistration.createOwnerRegistration(
 				now,
 				member,
 				group
@@ -71,6 +72,12 @@ public class GroupCommandService {
 		groupRepository.save(group);
 	}
 
+	/**
+	 * 그룹 홈페이지 수정 요청
+	 *
+	 * @param group                         그룹
+	 * @param groupHomePageUpdateRequestDto 그룹 홈페이지 수정 요청 DTO
+	 */
 	public void putGroupHomePage(Group group,
 			GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto) {
 		group.putHomePage(
@@ -80,5 +87,38 @@ public class GroupCommandService {
 				groupHomePageUpdateRequestDto.getGroupSiteUrl()
 		);
 		groupRepository.save(group);
+	}
+
+
+	/**
+	 * 그룹 등록 요청
+	 *
+	 * @param member 그룹에 등록을 요청한 멤버
+	 * @param group  등록할 그룹
+	 */
+	public void requestRegisterGroup(Member member, Group group) {
+		GroupRegistration groupRegistration = GroupRegistration.of(
+				member,
+				group,
+				GroupRole.COMMON
+		);
+		groupRegistrationRepository.save(groupRegistration);
+	}
+
+	/**
+	 * 그룹 등록 승인
+	 *
+	 * @param group        승인할 그룹
+	 * @param targetMember 승인할 멤버
+	 */
+	public void approveGroupRegister(Group group, Member targetMember) {
+		GroupRegistration groupRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (groupRegistration.getRegisteredAt() != null) {
+			throw ExceptionStatus.ALREADY_APPROVED_MEMBER.toServiceException();
+		}
+		groupRegistration.approve();
+		groupRegistrationRepository.save(groupRegistration);
 	}
 }
