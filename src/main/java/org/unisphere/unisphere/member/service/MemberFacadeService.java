@@ -34,6 +34,9 @@ public class MemberFacadeService {
 		Member member = memberQueryService.getMember(memberId);
 		String imageUrl = imageService.getImageUrl(
 				myAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());
+		if (imageUrl == null) {
+			imageUrl = imageService.findImageUrl(member.getAvatarImageUrl());
+		}
 		memberCommandService.updateAvatar(member, myAvatarUpdateRequestDto.getNickname(),
 				myAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());
 		return memberMapper.toMyAvatarResponseDto(member, imageUrl);

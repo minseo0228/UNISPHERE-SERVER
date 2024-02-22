@@ -88,4 +88,12 @@ public class Group {
 	public boolean isOwner(Member member) {
 		return this.ownerMember.equals(member);
 	}
+
+	public void putHomePage(String preSignedLogoImageUrl, String content, String email,
+			String groupSiteUrl) {
+		this.logoImageUrl = preSignedLogoImageUrl;
+		this.content = content;
+		this.email = email;
+		this.groupSiteUrl = groupSiteUrl;
+	}
 }

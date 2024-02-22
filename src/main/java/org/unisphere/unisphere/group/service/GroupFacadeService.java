@@ -15,7 +15,9 @@ import org.unisphere.unisphere.group.domain.GroupRegistration;
 import org.unisphere.unisphere.group.dto.GroupPreviewDto;
 import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
+import org.unisphere.unisphere.group.dto.request.GroupHomePageUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.response.GroupAvatarResponseDto;
+import org.unisphere.unisphere.group.dto.response.GroupHomePageResponseDto;
 import org.unisphere.unisphere.group.dto.response.GroupListResponseDto;
 import org.unisphere.unisphere.image.service.ImageService;
 import org.unisphere.unisphere.log.LogLevel;
@@ -77,7 +79,19 @@ public class GroupFacadeService {
 	@Transactional(readOnly = true)
 	public GroupAvatarResponseDto getGroupAvatar(Long groupId) {
 		Group group = groupQueryService.getGroup(groupId);
-		return groupMapper.toGroupAvatarResponseDto(group, group.getAvatarImageUrl());
+		String imageUrl = imageService.findImageUrl(
+				group.getAvatarImageUrl());
+		return groupMapper.toGroupAvatarResponseDto(group, imageUrl);
+	}
+
+	@Transactional(readOnly = true)
+	public GroupHomePageResponseDto getGroupHomePage(Long groupId) {
+		Group group = groupQueryService.getGroup(groupId);
+		return groupMapper.toGroupHomePageResponseDto(group,
+				imageService.findImageUrl(
+						group.getAvatarImageUrl()),
+				imageService.findImageUrl(
+						group.getLogoImageUrl()));
 	}
 
 	@Transactional
@@ -99,7 +113,26 @@ public class GroupFacadeService {
 		}
 		String imageUrl = imageService.getImageUrl(
 				groupAvatarUpdateRequestDto.getPreSignedAvatarImageUrl());
+		if (imageUrl == null) {
+			imageUrl = imageService.findImageUrl(group.getAvatarImageUrl());
+		}
 		groupCommandService.updateGroupAvatar(group, groupAvatarUpdateRequestDto);
 		return groupMapper.toGroupAvatarResponseDto(group, imageUrl);
+	}
+
+	@Transactional
+	public GroupHomePageResponseDto putGroupHomePage(Long memberId, Long groupId,
+			GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (!group.isOwner(member)) {
+			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		}
+		String logoImageUrl = imageService.getImageUrl(
+				groupHomePageUpdateRequestDto.getPreSignedLogoImageUrl());
+		String avatarImageUrl = imageService.findImageUrl(
+				group.getAvatarImageUrl());
+		groupCommandService.putGroupHomePage(group, groupHomePageUpdateRequestDto);
+		return groupMapper.toGroupHomePageResponseDto(group, avatarImageUrl, logoImageUrl);
 	}
 }

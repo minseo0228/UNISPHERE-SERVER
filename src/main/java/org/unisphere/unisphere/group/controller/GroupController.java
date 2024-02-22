@@ -70,7 +70,7 @@ public class GroupController {
 				PageRequest.of(page, size));
 	}
 
-	@Operation(summary = "특정 회원이 속한 단체 목록 조회", description = "특정 회원이 속한 단체 목록을 조회합니다.", deprecated = true)
+	@Operation(summary = "특정 회원이 속한 단체 목록 조회", description = "특정 회원이 속한 단체 목록을 조회합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
 	})
@@ -111,8 +111,6 @@ public class GroupController {
 				groupAvatarUpdateRequestDto);
 	}
 
-	// 특정 단체의 홈피 정보 조회
-	// GET /api/v1/groups/{groupId}/home-page
 	@Operation(summary = "특정 단체의 홈피 정보 조회", description = "특정 단체의 홈피 정보를 조회합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
@@ -120,26 +118,24 @@ public class GroupController {
 	@GetMapping(value = "/{groupId}/home-page")
 	@Secured(MemberRole.S_USER)
 	public GroupHomePageResponseDto getGroupHomePage(
-			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-		return GroupHomePageResponseDto.builder().build();
+		return groupFacadeService.getGroupHomePage(groupId);
 	}
 
-	// 특정 단체의 홈피 정보 편집
-	// PUT /api/v1/groups/{groupId}/home-page
 	@Operation(summary = "특정 단체의 홈피 정보 편집", description = "특정 단체의 홈피 정보를 편집합니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok"),
 	})
 	@PutMapping(value = "/{groupId}/home-page")
 	@Secured(MemberRole.S_USER)
-	public GroupHomePageResponseDto updateGroupHomePage(
+	public GroupHomePageResponseDto putGroupHomePage(
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId,
-			@RequestBody GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto
+			@Valid @RequestBody GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto
 	) {
-		return GroupHomePageResponseDto.builder().build();
+		return groupFacadeService.putGroupHomePage(memberSessionDto.getMemberId(), groupId,
+				groupHomePageUpdateRequestDto);
 	}
 
 	// 특정 단체의 속한 회원 목록 조회

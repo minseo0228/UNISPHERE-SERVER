@@ -10,6 +10,7 @@ import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
 import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
+import org.unisphere.unisphere.group.dto.request.GroupHomePageUpdateRequestDto;
 import org.unisphere.unisphere.group.infrastructure.GroupRegistrationRepository;
 import org.unisphere.unisphere.group.infrastructure.GroupRepository;
 import org.unisphere.unisphere.image.service.ImageService;
@@ -55,11 +56,28 @@ public class GroupCommandService {
 		groupRegistrationRepository.save(groupRegistration);
 	}
 
+	/**
+	 * 그룹 아바타 수정 요청
+	 *
+	 * @param group                       그룹
+	 * @param groupAvatarUpdateRequestDto 그룹 아바타 수정 요청 DTO
+	 */
 	public void updateGroupAvatar(Group group,
 			GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto) {
 		group.updateAvatar(
 				groupAvatarUpdateRequestDto.getName(),
 				groupAvatarUpdateRequestDto.getPreSignedAvatarImageUrl()
+		);
+		groupRepository.save(group);
+	}
+
+	public void putGroupHomePage(Group group,
+			GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto) {
+		group.putHomePage(
+				groupHomePageUpdateRequestDto.getPreSignedLogoImageUrl(),
+				groupHomePageUpdateRequestDto.getContent(),
+				groupHomePageUpdateRequestDto.getEmail(),
+				groupHomePageUpdateRequestDto.getGroupSiteUrl()
 		);
 		groupRepository.save(group);
 	}
