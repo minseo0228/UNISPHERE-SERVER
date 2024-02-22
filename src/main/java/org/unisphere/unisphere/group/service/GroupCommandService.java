@@ -163,4 +163,13 @@ public class GroupCommandService {
 		group.setOwnerMember(targetMember);
 		groupRepository.save(group);
 	}
+
+	/**
+	 * 그룹 삭제
+	 *
+	 * @param group 삭제할 그룹
+	 */
+	public void deleteGroup(Group group) {
+		groupRepository.delete(group);
+	}
 }

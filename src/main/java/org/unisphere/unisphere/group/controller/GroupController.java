@@ -256,7 +256,7 @@ public class GroupController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("groupId") Long groupId
 	) {
-//		groupFacadeService.deleteGroup(memberSessionDto.getMemberId(), groupId);
+		groupFacadeService.deleteGroup(memberSessionDto.getMemberId(), groupId);
 	}
 
 	// 단체 탈퇴

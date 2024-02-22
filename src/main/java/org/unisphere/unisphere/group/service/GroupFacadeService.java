@@ -199,4 +199,14 @@ public class GroupFacadeService {
 		Member targetMember = memberQueryService.getMember(targetMemberId);
 		groupCommandService.appointGroupOwner(group, targetMember);
 	}
+
+	@Transactional
+	public void deleteGroup(Long memberId, Long groupId) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (!group.isOwner(member)) {
+			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		}
+		groupCommandService.deleteGroup(group);
+	}
 }
