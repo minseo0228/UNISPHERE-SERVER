@@ -14,7 +14,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,7 +21,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.unisphere.unisphere.article.domain.InterestedArticle;
 import org.unisphere.unisphere.auth.domain.MemberRole;
-import org.unisphere.unisphere.auth.domain.OauthType;
 import org.unisphere.unisphere.group.domain.Group;
 import org.unisphere.unisphere.group.domain.GroupRegistration;
 
@@ -56,14 +54,6 @@ public class Member {
 	private LocalDateTime deletedAt;
 
 	@ToString.Exclude
-	@OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private PasswordMember passwordMember;
-
-	@ToString.Exclude
-	@OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private SocialMember socialMember;
-
-	@ToString.Exclude
 	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<GroupRegistration> groupRegistrations = new ArrayList<>();
 
@@ -91,16 +81,14 @@ public class Member {
 		return Objects.equals(id, member.id);
 	}
 
-	public static Member createSocialMember(
-			String email, String nickname, LocalDateTime now, MemberRole role,
-			String oauthId, OauthType oauthType
+	public static Member of(
+			String email, String nickname, LocalDateTime now, MemberRole role
 	) {
 		Member member = new Member();
 		member.role = role;
 		member.email = email;
 		member.nickname = nickname;
 		member.createdAt = now;
-		member.socialMember = SocialMember.of(member, oauthId, oauthType);
 		member.isFirstLogin = true;
 		return member;
 	}
