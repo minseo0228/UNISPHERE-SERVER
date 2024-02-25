@@ -161,73 +161,43 @@ public class GroupFacadeService {
 	public void requestRegisterGroup(Long memberId, Long groupId) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (groupQueryService.findGroupMembers(group.getId()).contains(member)) {
-			throw ExceptionStatus.ALREADY_GROUP_MEMBER.toServiceException();
-		}
-		groupCommandService.requestRegisterGroup(member, group);
+		groupCommandService.requestRegisterGroup(group, member);
 	}
 
 	@Transactional
 	public void approveGroupRegister(Long memberId, Long groupId, Long targetMemberId) {
-		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
-			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
-		}
-		Member targetMember = memberQueryService.getMember(targetMemberId);
-		groupCommandService.approveGroupRegister(group, targetMember);
+		groupCommandService.approveGroupRegister(group, memberId, targetMemberId);
 	}
 
 	@Transactional
 	public void appointGroupAdmin(Long memberId, Long groupId, Long targetMemberId) {
-		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupOwner(member)) {
-			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
-		}
-		Member targetMember = memberQueryService.getMember(targetMemberId);
-		groupCommandService.appointGroupAdmin(group, targetMember);
+		groupCommandService.appointGroupAdmin(group, memberId, targetMemberId);
 	}
 
 	@Transactional
 	public void appointGroupOwner(Long memberId, Long groupId, Long targetMemberId) {
-		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupOwner(member)) {
-			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
-		}
-		Member targetMember = memberQueryService.getMember(targetMemberId);
-		groupCommandService.appointGroupOwner(group, targetMember);
+		groupCommandService.appointGroupOwner(group, memberId, targetMemberId);
 	}
 
 	@Transactional
 	public void deleteGroup(Long memberId, Long groupId) {
-		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!group.isGroupOwner(member)) {
-			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
-		}
-		groupCommandService.deleteGroup(group);
+		Member member = memberQueryService.getMember(memberId);
+		groupCommandService.deleteGroup(group, member);
 	}
 
 	@Transactional
 	public void unregisterGroup(Long memberId, Long groupId) {
-		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!groupQueryService.findGroupMembers(group.getId()).contains(member)) {
-			throw ExceptionStatus.NOT_GROUP_MEMBER.toServiceException();
-		}
-		groupCommandService.unregisterGroup(member, group);
+		groupCommandService.unregisterGroup(group, memberId);
 	}
 
 	@Transactional
 	public void kickMemberFromGroup(Long memberId, Long groupId, Long targetMemberId) {
-		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
-			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
-		}
-		Member targetMember = memberQueryService.getMember(targetMemberId);
-		groupCommandService.kickMemberFromGroup(member, group, targetMember);
+		groupCommandService.kickMemberFromGroup(group, memberId, targetMemberId);
 	}
 }

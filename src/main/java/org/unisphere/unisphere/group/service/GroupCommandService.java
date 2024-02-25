@@ -1,6 +1,8 @@
 package org.unisphere.unisphere.group.service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.Optional;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,22 +41,20 @@ public class GroupCommandService {
 			throw ExceptionStatus.ALREADY_EXIST_GROUP_NAME.toServiceException();
 		}
 		LocalDateTime now = LocalDateTime.now();
-		String imageUrl = imageService.getImageUrl(
-				groupCreateRequestDto.getPreSignedLogoImageUrl());
 		Group group = Group.createGroup(
 				now,
 				member,
 				groupCreateRequestDto.getName(),
 				groupCreateRequestDto.getSummary(),
-				imageUrl
+				imageService.getImageUrl(
+						groupCreateRequestDto.getPreSignedLogoImageUrl())
 		);
 		groupRepository.save(group);
-		GroupRegistration groupRegistration = GroupRegistration.createOwnerRegistration(
-				now,
-				member,
-				group
-		);
-		groupRegistrationRepository.save(groupRegistration);
+		groupRegistrationRepository.save(
+				GroupRegistration.createOwnerRegistration(
+						now,
+						member,
+						group));
 	}
 
 	/**
@@ -96,117 +96,139 @@ public class GroupCommandService {
 	 * @param member 그룹에 등록을 요청한 멤버
 	 * @param group  등록할 그룹
 	 */
-	public void requestRegisterGroup(Member member, Group group) {
-		GroupRegistration groupRegistration = GroupRegistration.of(
-				member,
-				group,
-				GroupRole.COMMON
+	public void requestRegisterGroup(Group group, Member member) {
+		if (groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), member.getId()).isPresent()) {
+			throw ExceptionStatus.ALREADY_GROUP_MEMBER.toServiceException();
+		}
+		groupRegistrationRepository.save(
+				GroupRegistration.of(
+						member,
+						group,
+						GroupRole.COMMON
+				)
 		);
-		groupRegistrationRepository.save(groupRegistration);
 	}
 
 	/**
 	 * 그룹 등록 승인
 	 *
-	 * @param group        승인할 그룹
-	 * @param targetMember 승인할 멤버
+	 * @param group          승인할 그룹
+	 * @param memberId       요청한 멤버 ID
+	 * @param targetMemberId 승인할 멤버 ID
 	 */
-	public void approveGroupRegister(Group group, Member targetMember) {
-		GroupRegistration groupRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+	public void approveGroupRegister(Group group, Long memberId, Long targetMemberId) {
+		GroupRegistration adminRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), memberId)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
-		if (groupRegistration.getRegisteredAt() != null) {
+		if (adminRegistration.getRole() == GroupRole.COMMON) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
+		}
+		GroupRegistration targetRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMemberId)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (targetRegistration.getRegisteredAt() != null) {
 			throw ExceptionStatus.ALREADY_APPROVED_MEMBER.toServiceException();
 		}
-		groupRegistration.approve();
-		groupRegistrationRepository.save(groupRegistration);
+		targetRegistration.approveRegistration(LocalDateTime.now());
+		groupRegistrationRepository.save(targetRegistration);
 	}
 
 	/**
 	 * 그룹 관리자 임명
 	 *
-	 * @param group        그룹
-	 * @param targetMember 관리자로 임명할 멤버
+	 * @param group          그룹
+	 * @param memberId       요청한 멤버 ID
+	 * @param targetMemberId 관리자로 임명할 멤버 ID
 	 */
-	public void appointGroupAdmin(Group group, Member targetMember) {
-		GroupRegistration groupRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberIdAndRegisteredAtNotNull(group.getId(), targetMember.getId())
+	public void appointGroupAdmin(Group group, Long memberId, Long targetMemberId) {
+		GroupRegistration ownerRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), memberId)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
-		if (groupRegistration.getRole() == GroupRole.ADMIN
-				|| groupRegistration.getRole() == GroupRole.OWNER) {
+		if (ownerRegistration.getRole() != GroupRole.OWNER) {
+			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		}
+		GroupRegistration targetRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMemberId)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (targetRegistration.isAdmin()) {
 			throw ExceptionStatus.ALREADY_GROUP_ADMIN.toServiceException();
 		}
-		groupRegistration.appointAdmin();
-		groupRegistrationRepository.save(groupRegistration);
+		targetRegistration.appointAsAdmin();
+		groupRegistrationRepository.save(targetRegistration);
 	}
 
 	/**
 	 * 그룹 소유자 임명
 	 *
-	 * @param group        그룹
-	 * @param targetMember 소유자로 임명할 멤버
+	 * @param group          그룹
+	 * @param memberId       요청한 멤버 ID
+	 * @param targetMemberId 소유자로 임명할 멤버 ID
 	 */
-	public void appointGroupOwner(Group group, Member targetMember) {
-		GroupRegistration ownerRegistration = groupRegistrationRepository.findByRole(
-						GroupRole.OWNER)
-				.orElseThrow(ExceptionStatus.NOT_GROUP_OWNER::toServiceException);
-		GroupRegistration targetRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberIdAndRegisteredAtNotNull(group.getId(), targetMember.getId())
+	public void appointGroupOwner(Group group, Long memberId, Long targetMemberId) {
+		GroupRegistration ownerRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), memberId)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
-		if (targetRegistration.getRole() == GroupRole.OWNER) {
+		if (ownerRegistration.getRole() != GroupRole.OWNER) {
+			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		}
+		GroupRegistration targetRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), targetMemberId)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (targetRegistration.isOwner()) {
 			throw ExceptionStatus.ALREADY_GROUP_OWNER.toServiceException();
 		}
-		ownerRegistration.appointAdmin();
-		targetRegistration.appointOwner();
-		groupRegistrationRepository.save(ownerRegistration);
+		ownerRegistration.appointAsAdmin();
+		targetRegistration.appointAsOwner();
 		groupRegistrationRepository.save(targetRegistration);
-		group.setOwnerMember(targetMember);
-		groupRepository.save(group);
 	}
 
 	/**
-	 * 그룹 삭제
+	 * 그룹을 삭제합니다. 그룹 소유자만 삭제할 수 있습니다.
 	 *
-	 * @param group 삭제할 그룹
+	 * @param group  삭제할 그룹
+	 * @param member 그룹 소유자
 	 */
-	public void deleteGroup(Group group) {
+	public void deleteGroup(Group group, Member member) {
+		if (!group.isGroupOwner(member)) {
+			throw ExceptionStatus.NOT_GROUP_OWNER.toServiceException();
+		}
 		groupRepository.delete(group);
 	}
 
 	/**
 	 * // @formatter:off
-	 * 그룹에서 탈퇴합니다. 단체 소유자인 경우, 소유자를 관리자 중 가장 오래된 회원으로 임명합니다.
-	 * 단체 관리자가 없는 경우, 일반 회원 중 가장 오래된 회원을 소유자로 임명합니다.
-	 * 혼자 남은 경우, 단체 삭제합니다.
+	 * 그룹에서 탈퇴합니다. 그룹 소유자인 경우, 소유자를 관리자 중 가장 오래된 회원으로 임명합니다.
+	 * 그룹 관리자가 없는 경우, 일반 회원 중 가장 오래된 회원을 소유자로 임명합니다.
+	 * 혼자 남은 경우, 그룹을 삭제합니다.
 	 * // @formatter:on
 	 *
-	 * @param member 그룹에서 탈퇴할 멤버
 	 * @param group  탈퇴할 그룹
+	 * @param memberId 탈퇴 요청한 멤버 ID
 	 */
-	public void unregisterGroup(Member member, Group group) {
+	public void unregisterGroup(Group group, Long memberId) {
 		GroupRegistration groupRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberId(group.getId(), member.getId())
+				.findByGroupIdAndMemberId(group.getId(), memberId)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
 
 		if (groupRegistration.getRole() == GroupRole.OWNER) {
-			groupRegistrationRepository
-					.findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(group.getId(),
-							GroupRole.ADMIN)
-					.or(() -> groupRegistrationRepository.findByGroupIdAndRoleAndRegisteredAtNotNullOrderByRegisteredAtAsc(
-							group.getId(), GroupRole.COMMON))
-					.ifPresentOrElse(oldestAdminOrCommonRegistration -> {
-						oldestAdminOrCommonRegistration.appointOwner();
-						group.setOwnerMember(oldestAdminOrCommonRegistration.getMember());
-						groupRegistrationRepository.save(oldestAdminOrCommonRegistration);
-						groupRegistrationRepository.delete(groupRegistration);
-						group.unRegisterMember(member);
-						groupRepository.save(group);
-					}, () -> groupRepository.delete(group));
+			Optional<GroupRegistration> newOwnerCandidate = group.getGroupRegistrations().stream()
+					.filter(registration -> !registration.equals(groupRegistration))
+					.min(Comparator.comparing(GroupRegistration::getRegisteredAt));
+
+			if (newOwnerCandidate.isPresent()) {
+				GroupRegistration newOwnerRegistration = newOwnerCandidate.get();
+				newOwnerRegistration.appointAsOwner();
+				groupRegistrationRepository.save(newOwnerRegistration);
+				groupRegistrationRepository.delete(groupRegistration);
+			} else {
+				groupRepository.delete(group);
+				return;
+			}
 		} else {
 			groupRegistrationRepository.delete(groupRegistration);
-			group.unRegisterMember(member);
-			groupRepository.save(group);
 		}
+		groupRepository.save(group);
 	}
 
 	/**
@@ -216,22 +238,28 @@ public class GroupCommandService {
 	 * 추방된 멤버는 그룹에서 탈퇴됩니다.
 	 * // @formatter:on
 	 *
-	 * @param member       그룹 관리자 or 소유자
 	 * @param group        그룹
-	 * @param targetMember 추방할 멤버
+	 * @param memberId     요청한 멤버 ID
+	 * @param targetMemberId 추방할 멤버 ID
 	 */
-	public void kickMemberFromGroup(Member member, Group group, Member targetMember) {
+	public void kickMemberFromGroup(Group group, Long memberId, Long targetMemberId) {
+		GroupRegistration adminRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), memberId)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (adminRegistration.getRole() == GroupRole.COMMON) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
+		}
+
 		GroupRegistration targetRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberId(group.getId(), targetMember.getId())
+				.findByGroupIdAndMemberId(group.getId(), targetMemberId)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
 
-		if (member.equals(group.getOwnerMember())) {
-			if (targetRegistration.getRole() == GroupRole.OWNER) {
+		if (adminRegistration.getRole() == GroupRole.OWNER) {
+			if (targetRegistration.isOwner()) {
 				throw ExceptionStatus.CANNOT_KICK_HIGHER_RANK_MEMBER.toServiceException();
 			}
 		} else {
-			if (targetRegistration.getRole() == GroupRole.OWNER
-					|| targetRegistration.getRole() == GroupRole.ADMIN) {
+			if (targetRegistration.isAdmin() || targetRegistration.isOwner()) {
 				throw ExceptionStatus.CANNOT_KICK_HIGHER_RANK_MEMBER.toServiceException();
 			}
 		}

@@ -108,13 +108,4 @@ public class Group {
 		this.email = email;
 		this.groupSiteUrl = groupSiteUrl;
 	}
-
-	public void setOwnerMember(Member targetMember) {
-		this.ownerMember = targetMember;
-	}
-
-	public void unRegisterMember(Member member) {
-		this.groupRegistrations.removeIf(
-				groupRegistration -> groupRegistration.getMember().equals(member));
-	}
 }
