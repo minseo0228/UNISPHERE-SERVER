@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import org.unisphere.unisphere.auth.domain.MemberRole;
 import org.unisphere.unisphere.group.domain.GroupRole;
 
@@ -13,6 +14,7 @@ import org.unisphere.unisphere.group.domain.GroupRole;
 @ToString
 @Builder
 @Schema(description = "단체에 속한 회원 정보")
+@FieldNameConstants
 public class GroupMemberDto {
 
 	@Schema(description = "회원 ID", example = "1")
