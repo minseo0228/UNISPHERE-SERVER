@@ -66,7 +66,9 @@ public class GroupFacadeService {
 
 	@Transactional(readOnly = true)
 	public GroupListResponseDto getMemberGroups(Long memberId, Pageable pageable) {
-		Page<GroupRegistration> groupRegistrations = groupQueryService.findMemberGroups(memberId,
+		Member member = memberQueryService.getMember(memberId);
+		Page<GroupRegistration> groupRegistrations = groupQueryService.findMemberGroups(
+				member.getId(),
 				pageable);
 		List<GroupPreviewDto> groupPreviewDtos = groupRegistrations.stream()
 				.sorted(Comparator.comparing(
@@ -81,7 +83,9 @@ public class GroupFacadeService {
 
 	@Transactional(readOnly = true)
 	public GroupMemberListResponseDto getGroupMembers(Long groupId, Pageable pageable) {
-		Page<GroupRegistration> groupRegistrations = groupQueryService.findGroupMembers(groupId,
+		Group group = groupQueryService.getGroup(groupId);
+		Page<GroupRegistration> groupRegistrations = groupQueryService.findGroupMembers(
+				group.getId(),
 				pageable);
 		List<GroupMemberDto> groupMemberDtos = groupRegistrations.stream()
 				.sorted(Comparator.comparing(
