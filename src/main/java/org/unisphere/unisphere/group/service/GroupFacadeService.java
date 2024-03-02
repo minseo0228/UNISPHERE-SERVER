@@ -122,9 +122,6 @@ public class GroupFacadeService {
 	@Transactional
 	public void createGroup(Long memberId, GroupCreateRequestDto groupCreateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
-		if (groupQueryService.findGroupByName(groupCreateRequestDto.getName()).isPresent()) {
-			throw ExceptionStatus.ALREADY_EXIST_GROUP_NAME.toServiceException();
-		}
 		groupCommandService.createGroup(member, groupCreateRequestDto);
 	}
 
@@ -133,7 +130,7 @@ public class GroupFacadeService {
 			GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
+		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
 			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		String imageUrl = imageService.getImageUrl(
@@ -150,7 +147,7 @@ public class GroupFacadeService {
 			GroupHomePageUpdateRequestDto groupHomePageUpdateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);
 		Group group = groupQueryService.getGroup(groupId);
-		if (groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
+		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
 			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		String logoImageUrl = imageService.getImageUrl(

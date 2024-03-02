@@ -65,6 +65,9 @@ public class GroupCommandService {
 	 */
 	public void updateGroupAvatar(Group group,
 			GroupAvatarUpdateRequestDto groupAvatarUpdateRequestDto) {
+		if (groupRepository.findByName(groupAvatarUpdateRequestDto.getName()).isPresent()) {
+			throw ExceptionStatus.ALREADY_EXIST_GROUP_NAME.toServiceException();
+		}
 		group.updateAvatar(
 				groupAvatarUpdateRequestDto.getName(),
 				groupAvatarUpdateRequestDto.getPreSignedAvatarImageUrl()
@@ -105,7 +108,8 @@ public class GroupCommandService {
 				GroupRegistration.of(
 						member,
 						group,
-						GroupRole.COMMON
+						GroupRole.COMMON,
+						null
 				)
 		);
 	}

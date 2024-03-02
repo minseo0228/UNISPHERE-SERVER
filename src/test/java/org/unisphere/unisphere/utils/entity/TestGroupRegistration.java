@@ -41,10 +41,19 @@ public class TestGroupRegistration implements TestEntity<GroupRegistration, Long
 				.build().asEntity();
 	}
 
-	public static GroupRegistration asCommonRegistration(Member member, Group group) {
+	public static GroupRegistration asNotApprovedCommonRegistration(Member member, Group group) {
 		return TestGroupRegistration.builder()
 				.role(GroupRole.COMMON)
 				.registeredAt(null)
+				.member(member)
+				.group(group)
+				.build().asEntity();
+	}
+
+	public static GroupRegistration asApprovedCommonRegistration(Member member, Group group) {
+		return TestGroupRegistration.builder()
+				.role(GroupRole.COMMON)
+				.registeredAt(LocalDateTime.of(LocalDate.EPOCH, LocalTime.MIDNIGHT))
 				.member(member)
 				.group(group)
 				.build().asEntity();
@@ -60,16 +69,17 @@ public class TestGroupRegistration implements TestEntity<GroupRegistration, Long
 	public static List<GroupRegistration> asCommonRegistrations(int count, Member member,
 			Group group) {
 		return IntStream.range(0, count)
-				.mapToObj(i -> asCommonRegistration(member, group))
+				.mapToObj(i -> asNotApprovedCommonRegistration(member, group))
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public GroupRegistration asEntity() {
-		return GroupRegistration.createOwnerRegistration(
-				registeredAt,
+		return GroupRegistration.of(
 				member,
-				group
+				group,
+				role,
+				registeredAt
 		);
 	}
 

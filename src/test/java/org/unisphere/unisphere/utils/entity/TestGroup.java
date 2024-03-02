@@ -31,6 +31,7 @@ public class TestGroup implements TestEntity<Group, Long> {
 	private Member ownerMember;
 	private String avatarImageUrl;
 	private String logoImageUrl;
+	private String name;
 
 	public static Group asDefaultEntity(Member ownerMember) {
 		return TestGroup.builder()
@@ -51,9 +52,10 @@ public class TestGroup implements TestEntity<Group, Long> {
 		return Group.createGroup(
 				DEFAULT_CREATED_AT_VALUE,
 				ownerMember,
-				UUID.randomUUID().toString(),
+				name != null ? name : UUID.randomUUID().toString(),
 				DEFAULT_SUMMARY_VALUE,
-				"logo-images/" + UUID.randomUUID() + "/logo.png"
+				logoImageUrl != null ? logoImageUrl
+						: "logo-images/" + UUID.randomUUID() + "/logo.png"
 		);
 	}
 

@@ -66,14 +66,15 @@ public class GroupRegistration {
 		return groupRegistration;
 	}
 
-	public static GroupRegistration of(Member member, Group group, GroupRole role) {
+	public static GroupRegistration of(Member member, Group group, GroupRole role,
+			LocalDateTime now) {
 		GroupRegistration groupRegistration = new GroupRegistration();
 		groupRegistration.id = new GroupRegistrationCompositeKey(member.getId(),
 				group.getId());
 		groupRegistration.member = member;
 		groupRegistration.group = group;
 		groupRegistration.role = role;
-		groupRegistration.registeredAt = null;
+		groupRegistration.registeredAt = now;
 		return groupRegistration;
 	}
 
