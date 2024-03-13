@@ -46,8 +46,7 @@ public class GroupCommandService {
 				member,
 				groupCreateRequestDto.getName(),
 				groupCreateRequestDto.getSummary(),
-				imageService.getImageUrl(
-						groupCreateRequestDto.getPreSignedLogoImageUrl())
+				groupCreateRequestDto.getPreSignedLogoImageUrl()
 		);
 		groupRepository.save(group);
 		groupRegistrationRepository.save(

@@ -28,17 +28,18 @@ public class AuthService {
 				.orElseGet(() -> {
 					Member member = Member.of(
 							extractor.getEmail(),
-							extractor.getNickname(),
+							extractor.getNickname() + UUID.randomUUID(),
 							LocalDateTime.now(),
 							MemberRole.MEMBER
 					);
+					memberRepository.save(member);
 					SocialMember socialMember = SocialMember.of(
 							member,
 							extractor.getOauthId(),
 							extractor.getOauthType()
 					);
 					socialMemberRepository.save(socialMember);
-					return memberRepository.save(member);
+					return member;
 				});
 	}
 }
