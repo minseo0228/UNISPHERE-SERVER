@@ -194,6 +194,22 @@ public class GroupController {
 		groupFacadeService.requestRegisterGroup(memberSessionDto.getMemberId(), groupId);
 	}
 
+	@Operation(summary = "단체 가입 요청한 회원 목록 조회", description = "특정 단체에 가입 요청한 회원 목록을 조회합니다.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "ok"),
+	})
+	@GetMapping(value = "/{groupId}/register")
+	@Secured(MemberRole.S_USER)
+	public GroupMemberListResponseDto getGroupRegisterRequests(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@PathVariable("groupId") Long groupId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		return groupFacadeService.getGroupRegisterRequests(memberSessionDto.getMemberId(), groupId,
+				PageRequest.of(page, size));
+	}
+
 	@Operation(summary = "단체 가입 승인", description = "특정 회원의 단체 가입을 승인합니다. 단체 관리자만 호출할 수 있습니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok")

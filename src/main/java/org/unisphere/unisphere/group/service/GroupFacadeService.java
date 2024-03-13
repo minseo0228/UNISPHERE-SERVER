@@ -119,6 +119,31 @@ public class GroupFacadeService {
 						group.getLogoImageUrl()));
 	}
 
+	@Transactional(readOnly = true)
+	public GroupMemberListResponseDto getGroupRegisterRequests(Long memberId, Long groupId,
+			Pageable pageable) {
+		Member member = memberQueryService.getMember(memberId);
+		Group group = groupQueryService.getGroup(groupId);
+		if (!groupQueryService.findGroupAdmins(group.getId()).contains(member)) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
+		}
+		Page<GroupRegistration> groupRegistrations = groupQueryService.findGroupRegisterRequests(
+				group.getId(),
+				pageable);
+		List<GroupMemberDto> groupMemberDtos = groupRegistrations.stream()
+				.sorted(Comparator.comparing(
+						groupRegistration -> groupRegistration.getMember().getNickname()))
+				.map(groupRegistration -> groupMapper.toGroupMemberDto(
+						groupRegistration.getMember(),
+						imageService.findImageUrl(
+								groupRegistration.getMember().getAvatarImageUrl()),
+						groupRegistration.getRole()
+				))
+				.collect(Collectors.toList());
+		return groupMapper.toGroupMemberListResponseDto(groupMemberDtos,
+				groupRegistrations.getTotalElements());
+	}
+
 	@Transactional
 	public void createGroup(Long memberId, GroupCreateRequestDto groupCreateRequestDto) {
 		Member member = memberQueryService.getMember(memberId);

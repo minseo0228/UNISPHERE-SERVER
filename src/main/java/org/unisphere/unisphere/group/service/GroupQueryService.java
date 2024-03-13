@@ -118,4 +118,16 @@ public class GroupQueryService {
 				.map(GroupRegistration::getMember)
 				.collect(Collectors.toList());
 	}
+
+	/**
+	 * 그룹 가입 신청 요청자 목록 조회
+	 *
+	 * @param groupId  그룹 ID
+	 * @param pageable 페이징 정보
+	 * @return
+	 */
+	public Page<GroupRegistration> findGroupRegisterRequests(Long groupId, Pageable pageable) {
+		return groupRegistrationRepository.findAllByGroupIdAndRegisteredAtNull(
+				groupId, pageable);
+	}
 }
