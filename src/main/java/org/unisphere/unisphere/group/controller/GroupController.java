@@ -50,9 +50,10 @@ public class GroupController {
 	@Secured(MemberRole.S_USER)
 	public GroupListResponseDto getAllGroups(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(required = false) String keyword
 	) {
-		return groupFacadeService.getAllGroups(PageRequest.of(page, size));
+		return groupFacadeService.getAllGroups(PageRequest.of(page, size), keyword);
 	}
 
 	@Operation(summary = "내가 속한 단체 목록 조회", description = "내가 속한 단체 목록을 조회합니다.")

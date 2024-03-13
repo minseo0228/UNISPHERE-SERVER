@@ -28,10 +28,14 @@ public class GroupQueryService {
 	 * 전체 그룹 정보 조회
 	 *
 	 * @param pageable 페이징 정보
+	 * @param keyword  검색 키워드
 	 * @return 전체 그룹 정보 (Page)
 	 */
-	public Page<Group> findAllGroups(Pageable pageable) {
-		return groupRepository.findAll(pageable);
+	public Page<Group> findAllGroups(Pageable pageable, String keyword) {
+		if (keyword == null) {
+			return groupRepository.findAll(pageable);
+		}
+		return groupRepository.findAllByNameContaining(keyword, pageable);
 	}
 
 	/**

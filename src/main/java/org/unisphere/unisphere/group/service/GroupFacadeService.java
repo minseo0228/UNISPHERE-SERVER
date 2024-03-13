@@ -39,8 +39,8 @@ public class GroupFacadeService {
 	private final ImageService imageService;
 
 	@Transactional(readOnly = true)
-	public GroupListResponseDto getAllGroups(Pageable pageable) {
-		Page<Group> groups = groupQueryService.findAllGroups(pageable);
+	public GroupListResponseDto getAllGroups(Pageable pageable, String keyword) {
+		Page<Group> groups = groupQueryService.findAllGroups(pageable, keyword);
 		List<GroupPreviewDto> groupPreviewDtos = groups.stream()
 				.sorted(Comparator.comparing(Group::getName))
 				.map(group -> groupMapper.toGroupPreviewDto(group,
