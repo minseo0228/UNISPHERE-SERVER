@@ -226,4 +226,10 @@ public class GroupFacadeService {
 		Group group = groupQueryService.getGroup(groupId);
 		groupCommandService.kickMemberFromGroup(group, memberId, targetMemberId);
 	}
+
+	@Transactional
+	public void rejectGroupRegister(Long memberId, Long groupId, Long targetMemberId) {
+		Group group = groupQueryService.getGroup(groupId);
+		groupCommandService.rejectGroupRegister(group, memberId, targetMemberId);
+	}
 }

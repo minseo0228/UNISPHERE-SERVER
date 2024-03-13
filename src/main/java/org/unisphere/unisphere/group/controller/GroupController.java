@@ -225,6 +225,22 @@ public class GroupController {
 				targetMemberId);
 	}
 
+	@Operation(summary = "단체 가입 거절", description = "특정 회원의 단체 가입을 거절합니다. 단체 관리자만 호출할 수 있습니다.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "ok")
+	})
+	@DeleteMapping(value = "/{groupId}/members/{memberId}/register/reject")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Secured(MemberRole.S_USER)
+	public void rejectGroupRegister(
+			@LoginMemberInfo MemberSessionDto memberSessionDto,
+			@PathVariable("groupId") Long groupId,
+			@PathVariable("memberId") Long targetMemberId
+	) {
+		groupFacadeService.rejectGroupRegister(memberSessionDto.getMemberId(), groupId,
+				targetMemberId);
+	}
+
 	@Operation(summary = "단체 관리자 임명", description = "특정 회원을 단체 관리자로 임명합니다. 단체 소유자만 호출할 수 있습니다.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "ok")

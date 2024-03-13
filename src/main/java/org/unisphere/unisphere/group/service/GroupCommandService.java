@@ -16,7 +16,6 @@ import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupHomePageUpdateRequestDto;
 import org.unisphere.unisphere.group.infrastructure.GroupRegistrationRepository;
 import org.unisphere.unisphere.group.infrastructure.GroupRepository;
-import org.unisphere.unisphere.image.service.ImageService;
 import org.unisphere.unisphere.member.domain.Member;
 
 @Service
@@ -27,7 +26,6 @@ public class GroupCommandService {
 
 	private final GroupRepository groupRepository;
 	private final GroupRegistrationRepository groupRegistrationRepository;
-	private final ImageService imageService;
 
 
 	/**
@@ -266,6 +264,26 @@ public class GroupCommandService {
 				throw ExceptionStatus.CANNOT_KICK_HIGHER_RANK_MEMBER.toServiceException();
 			}
 		}
+		groupRegistrationRepository.delete(targetRegistration);
+	}
+
+	/**
+	 * 그룹 등록을 거절합니다. 그룹 관리자만 거절할 수 있습니다.
+	 *
+	 * @param group          그룹
+	 * @param memberId       요청한 멤버 ID
+	 * @param targetMemberId 거절할 멤버 ID
+	 */
+	public void rejectGroupRegister(Group group, Long memberId, Long targetMemberId) {
+		GroupRegistration adminRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberId(group.getId(), memberId)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_MEMBER::toServiceException);
+		if (adminRegistration.getRole() == GroupRole.COMMON) {
+			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
+		}
+		GroupRegistration targetRegistration = groupRegistrationRepository
+				.findByGroupIdAndMemberIdAndRegisteredAtNull(group.getId(), targetMemberId)
+				.orElseThrow(ExceptionStatus.NOT_GROUP_REQUEST_MEMBER::toServiceException);
 		groupRegistrationRepository.delete(targetRegistration);
 	}
 }

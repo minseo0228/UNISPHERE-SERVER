@@ -39,4 +39,8 @@ public interface GroupRegistrationRepository extends JpaRepository<GroupRegistra
 
 	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.registeredAt is null")
 	Page<GroupRegistration> findAllByGroupIdAndRegisteredAtNull(Long groupId, Pageable pageable);
+
+	@Query("select gr from group_registration gr where gr.group.id = :groupId and gr.member.id = :memberId and gr.registeredAt is null")
+	Optional<GroupRegistration> findByGroupIdAndMemberIdAndRegisteredAtNull(Long groupId,
+			Long memberId);
 }
