@@ -1489,4 +1489,113 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 							.getSingleResult()).isInstanceOf(NoResultException.class));
 		}
 	}
+
+	@Nested
+	class KickGroupMember {
+
+		private final String URL = BASE_URL;
+
+		@BeforeEach
+		public void setup() {
+			loginMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			token = jwtTokenProvider.createCommonAccessToken(loginMember.getId()).getTokenValue();
+		}
+
+		@Test
+		@DisplayName("관리자가 아닌 멤버가 그룹 멤버 추방 요청 시, 403 Forbidden 응답")
+		public void requestExpelGroupMember_NotAdmin_403Forbidden() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(anotherMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(anotherMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(targetMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(loginMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId() + "/kick")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isForbidden());
+		}
+
+		@Test
+		@DisplayName("관리자는 맞지만 대상 멤버가 그룹 멤버가 아닌 경우, 404 Not Found 응답")
+		public void requestExpelGroupMember_NotGroupMember_404NotFound() throws Exception {
+			// given
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId() + "/kick")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("정상적인 그룹 멤버 추방 요청 시, 204 No Content 응답")
+		public void requestExpelGroupMember_ValidRequest_204NoContent() throws Exception {
+			// given
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(targetMember, group)
+			);
+			persistenceHelper.flushAndClear();
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId() + "/kick")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+			persistenceHelper.flushAndClear();
+
+			// then
+			resultActions.andExpect(status().isNoContent())
+					.andDo(ignore -> assertThatThrownBy(() -> em.createQuery(
+									"select gr from group_registration gr where gr.member.id = :memberId",
+									GroupRegistration.class)
+							.setParameter("memberId", targetMember.getId())
+							.getSingleResult()).isInstanceOf(NoResultException.class)
+					);
+		}
+	}
 }
