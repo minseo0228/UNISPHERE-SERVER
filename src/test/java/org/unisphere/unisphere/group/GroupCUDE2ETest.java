@@ -1217,6 +1217,129 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 	}
 
 	@Nested
+	class DeleteGroup {
+
+		private final String URL = BASE_URL;
+
+		@BeforeEach
+		public void setup() {
+			loginMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			token = jwtTokenProvider.createCommonAccessToken(loginMember.getId()).getTokenValue();
+		}
+
+		@Test
+		@DisplayName("그룹 소유자가 아닌 멤버가 그룹 삭제 요청 시, 403 Forbidden 응답")
+		public void deleteGroup_NotOwner_403Forbidden() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(anotherMember)
+							.build()
+							.asEntity()
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId())
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isForbidden());
+		}
+
+		@Test
+		@DisplayName("멤버가 존재할 때 그룹 소유자가 그룹 삭제 요청 시, 204 No Content 응답")
+		public void deleteGroup_ExistMember_204NoContent() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(anotherMember, group)
+			);
+			persistenceHelper.flushAndClear();
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId())
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNoContent())
+					.andDo(
+							ignore -> {
+								assertThatThrownBy(() -> em.createQuery(
+												"select g from group_entity g where g.id = :groupId",
+												Group.class)
+										.setParameter("groupId", group.getId())
+										.getSingleResult()).isInstanceOf(NoResultException.class);
+
+								assertThatThrownBy(() -> em.createQuery(
+												"select gr from group_registration gr where gr.group.id = :groupId",
+												GroupRegistration.class)
+										.setParameter("groupId", group.getId())
+										.getSingleResult()).isInstanceOf(NoResultException.class);
+							}
+					);
+		}
+
+		@Test
+		@DisplayName("멤버가 존재하지 않을 때 그룹 소유자가 그룹 삭제 요청 시, 204 No Content 응답")
+		public void deleteGroup_NotExistMember_204NoContent() throws Exception {
+			// given
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group)
+			);
+			persistenceHelper.flushAndClear();
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId())
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNoContent())
+					.andDo(
+							ignore -> {
+								assertThatThrownBy(() -> em.createQuery(
+												"select g from group_entity g where g.id = :groupId",
+												Group.class)
+										.setParameter("groupId", group.getId())
+										.getSingleResult()).isInstanceOf(NoResultException.class);
+
+								assertThatThrownBy(() -> em.createQuery(
+												"select gr from group_registration gr where gr.group.id = :groupId",
+												GroupRegistration.class)
+										.setParameter("groupId", group.getId())
+										.getSingleResult()).isInstanceOf(NoResultException.class);
+							}
+					);
+		}
+	}
+
+
+	@Nested
 	class RequestUnregisterGroup {
 
 		private final String URL = BASE_URL;
@@ -1306,7 +1429,6 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 							.build()
 							.asEntity()
 			);
-			System.out.println("group = " + group);
 			persistenceHelper.persistAndReturn(
 					TestGroupRegistration.asOwnerRegistration(loginMember, group),
 					TestGroupRegistration.asNotApprovedCommonRegistration(anotherMember, group),

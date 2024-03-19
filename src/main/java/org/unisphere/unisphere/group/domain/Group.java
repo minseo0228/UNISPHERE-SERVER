@@ -69,11 +69,11 @@ public class Group {
 		if (this == o) {
 			return true;
 		}
-		if (o == null || getClass() != o.getClass()) {
+		if (!(o instanceof Group)) {
 			return false;
 		}
 		Group group = (Group) o;
-		return getId().equals(group.getId());
+		return id != null && id.equals(group.id);
 	}
 
 	public static Group createGroup(LocalDateTime now, Member member, String name, String summary,
