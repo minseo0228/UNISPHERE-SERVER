@@ -2,6 +2,7 @@ package org.unisphere.unisphere.group.service;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -214,19 +215,22 @@ public class GroupCommandService {
 
 		if (groupRegistration.getRole() == GroupRole.OWNER) {
 			Optional<GroupRegistration> newOwnerCandidate = group.getGroupRegistrations().stream()
-					.filter(registration -> !registration.equals(groupRegistration))
+					.filter(registration -> Objects.nonNull(registration.getRegisteredAt())
+							&& !registration.equals(groupRegistration))
 					.min(Comparator.comparing(GroupRegistration::getRegisteredAt));
 
 			if (newOwnerCandidate.isPresent()) {
 				GroupRegistration newOwnerRegistration = newOwnerCandidate.get();
 				newOwnerRegistration.appointAsOwner();
 				groupRegistrationRepository.save(newOwnerRegistration);
+				group.getGroupRegistrations().remove(groupRegistration);
 				groupRegistrationRepository.delete(groupRegistration);
 			} else {
 				groupRepository.delete(group);
 				return;
 			}
 		} else {
+			group.getGroupRegistrations().remove(groupRegistration);
 			groupRegistrationRepository.delete(groupRegistration);
 		}
 		groupRepository.save(group);

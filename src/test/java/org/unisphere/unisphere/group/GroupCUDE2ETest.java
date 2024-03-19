@@ -1,6 +1,7 @@
 package org.unisphere.unisphere.group;
 
 import java.util.UUID;
+import javax.persistence.NoResultException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,6 +28,7 @@ import org.unisphere.unisphere.utils.entity.TestGroupRegistration;
 import org.unisphere.unisphere.utils.entity.TestMember;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -1211,6 +1213,158 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 								GroupRole.COMMON);
 						assertThat(queriedGroupRegistration.getRegisteredAt()).isNotNull();
 					});
+		}
+	}
+
+	@Nested
+	class RequestUnregisterGroup {
+
+		private final String URL = BASE_URL;
+
+		@BeforeEach
+		public void setup() {
+			loginMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			token = jwtTokenProvider.createCommonAccessToken(loginMember.getId()).getTokenValue();
+		}
+
+		@Test
+		@DisplayName("그룹 멤버가 아닌 유저가 그룹 탈퇴 요청 시, 404 Not Found 응답")
+		public void requestUnregisterGroup_NotGroupMember_404NotFound() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(anotherMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(anotherMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/unregister")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("일반 그룹 멤버가 그룹 탈퇴 요청 시, 204 No Content 응답")
+		public void requestUnregisterGroup_CommonGroupMember_204NoContent() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(anotherMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(anotherMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(loginMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/unregister")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+			persistenceHelper.flushAndClear();
+
+			// then
+			resultActions.andExpect(status().isNoContent())
+					.andDo(ignore -> assertThatThrownBy(() -> em.createQuery(
+									"select gr from group_registration gr where gr.member.id = :memberId",
+									GroupRegistration.class)
+							.setParameter("memberId", loginMember.getId())
+							.getSingleResult()).isInstanceOf(NoResultException.class));
+		}
+
+		@Test
+		@DisplayName("단체 생성자가 그룹 탈퇴 요청 시, 후보군에게 생성자를 위임하고, 204 No Content 응답")
+		public void requestUnregisterGroup_Owner_204NoContent() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Member candidateMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			System.out.println("group = " + group);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group),
+					TestGroupRegistration.asNotApprovedCommonRegistration(anotherMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(candidateMember, group)
+			);
+			persistenceHelper.flushAndClear();
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/unregister")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+			persistenceHelper.flushAndClear();
+
+			// then
+			resultActions.andExpect(status().isNoContent())
+					.andDo(ignore -> {
+						Group queriedGroup = em.find(Group.class, group.getId());
+						assertThat(queriedGroup.getOwnerMember().getId()).isEqualTo(
+								candidateMember.getId());
+
+						assertThatThrownBy(() -> em.createQuery(
+										"select gr from group_registration gr where gr.member.id = :memberId",
+										GroupRegistration.class)
+								.setParameter("memberId", loginMember.getId())
+								.getSingleResult()).isInstanceOf(NoResultException.class);
+					});
+		}
+
+		@Test
+		@DisplayName("단체 생성자가 혼자 남은 상태에서 그룹 탈퇴 요청 시, 그룹을 삭제하고, 204 No Content 응답")
+		public void requestUnregisterGroup_OwnerAlone_204NoContent() throws Exception {
+			// given
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group)
+			);
+			persistenceHelper.flushAndClear();
+
+			// when
+			MockHttpServletRequestBuilder request = delete(
+					URL + "/" + group.getId() + "/unregister")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+			persistenceHelper.flushAndClear();
+
+			// then
+			resultActions.andExpect(status().isNoContent())
+					.andDo(ignore -> assertThatThrownBy(() -> em.createQuery(
+									"select g from group_entity g where g.id = :groupId",
+									Group.class)
+							.setParameter("groupId", group.getId())
+							.getSingleResult()).isInstanceOf(NoResultException.class));
 		}
 	}
 }

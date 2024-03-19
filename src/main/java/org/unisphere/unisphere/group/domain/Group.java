@@ -57,7 +57,7 @@ public class Group {
 	private LocalDateTime approvedAt;
 
 	@ToString.Exclude
-	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<GroupRegistration> groupRegistrations = new ArrayList<>();
 
 	@JoinColumn(name = "ownerMemberId", nullable = false)
@@ -107,5 +107,9 @@ public class Group {
 		this.content = content;
 		this.email = email;
 		this.groupSiteUrl = groupSiteUrl;
+	}
+
+	public void changeOwner(Member newOwner) {
+		this.ownerMember = newOwner;
 	}
 }
