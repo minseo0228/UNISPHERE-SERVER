@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.web.context.WebApplicationContext;
 import org.unisphere.unisphere.auth.jwt.JwtTokenProvider;
 import org.unisphere.unisphere.group.domain.Group;
+import org.unisphere.unisphere.group.domain.GroupRegistration;
 import org.unisphere.unisphere.group.domain.GroupRole;
 import org.unisphere.unisphere.group.dto.request.GroupAvatarUpdateRequestDto;
 import org.unisphere.unisphere.group.dto.request.GroupCreateRequestDto;
@@ -608,7 +609,7 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 		@DisplayName("단체 소개가 1025자인 그룹 홈페이지 변경 요청 시, 400 Bad Request 응답")
 		public void putGroupHomePage_LongContent_400BadRequest() throws Exception {
 			// given
-			String longContent = "a" .repeat(1025);
+			String longContent = "a".repeat(1025);
 			Group group = persistenceHelper.persistAndReturn(
 					TestGroup.builder()
 							.ownerMember(loginMember)
@@ -642,7 +643,7 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 		@DisplayName("단체 이메일 주소가 65자인 그룹 홈페이지 변경 요청 시, 400 Bad Request 응답")
 		public void putGroupHomePage_LongEmail_400BadRequest() throws Exception {
 			// given
-			String longEmail = "a" .repeat(65);
+			String longEmail = "a".repeat(65);
 			Group group = persistenceHelper.persistAndReturn(
 					TestGroup.builder()
 							.ownerMember(loginMember)
@@ -928,6 +929,108 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 							jsonMatcher.get(GroupHomePageResponseDto.Fields.email).isEquals(email))
 					.andExpect(jsonMatcher.get(GroupHomePageResponseDto.Fields.groupSiteUrl)
 							.isEquals(groupSiteUrl));
+		}
+	}
+
+	@Nested
+	class RequestRegisterGroup {
+
+		private final String URL = BASE_URL;
+
+		@BeforeEach
+		public void setup() {
+			loginMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			token = jwtTokenProvider.createCommonAccessToken(loginMember.getId()).getTokenValue();
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 그룹에 대한 그룹 가입 요청 시, 404 Not Found 응답")
+		public void requestRegisterGroup_NotExistGroup_404NotFound() throws Exception {
+			// given
+			long notExistGroupId = 9999L;
+
+			// when
+			MockHttpServletRequestBuilder request = post(
+					URL + "/" + notExistGroupId + "/register")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("가입 승인된 멤버가 그룹 가입 요청 시, 403 Forbidden 응답")
+		public void requestRegisterGroup_ApprovedCommonMember_403Forbidden() throws Exception {
+			// given
+			Member ownerMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(ownerMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(ownerMember, group)
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asApprovedCommonRegistration(loginMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = post(
+					URL + "/" + group.getId() + "/register")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isConflict());
+		}
+
+		@Test
+		@DisplayName("가입 승인되지 않은 멤버가 그룹 가입 요청 시, 201 Created 응답")
+		public void requestRegisterGroup_NotApprovedCommonMember_201Created() throws Exception {
+			// given
+			Member ownerMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(ownerMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(ownerMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = post(
+					URL + "/" + group.getId() + "/register")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+			persistenceHelper.flushAndClear();
+
+			// then
+			resultActions.andExpect(status().isCreated())
+					.andDo(ignore -> {
+						GroupRegistration queriedGroupRegistration = em.createQuery(
+										"select gr from group_registration gr where gr.member.id = :memberId",
+										GroupRegistration.class)
+								.setParameter("memberId", loginMember.getId())
+								.getSingleResult();
+						assertThat(queriedGroupRegistration.getMember().getId()).isEqualTo(
+								loginMember.getId());
+						assertThat(queriedGroupRegistration.getGroup().getId()).isEqualTo(
+								group.getId());
+						assertThat(queriedGroupRegistration.getRole()).isEqualTo(
+								GroupRole.COMMON);
+						assertThat(queriedGroupRegistration.getRegisteredAt()).isNull();
+					});
 		}
 	}
 }
