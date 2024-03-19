@@ -286,8 +286,11 @@ public class GroupCommandService {
 			throw ExceptionStatus.NOT_GROUP_ADMIN.toServiceException();
 		}
 		GroupRegistration targetRegistration = groupRegistrationRepository
-				.findByGroupIdAndMemberIdAndRegisteredAtNull(group.getId(), targetMemberId)
+				.findByGroupIdAndMemberId(group.getId(), targetMemberId)
 				.orElseThrow(ExceptionStatus.NOT_GROUP_REQUEST_MEMBER::toServiceException);
+		if (targetRegistration.getRegisteredAt() != null) {
+			throw ExceptionStatus.ALREADY_APPROVED_MEMBER.toServiceException();
+		}
 		groupRegistrationRepository.delete(targetRegistration);
 	}
 }
