@@ -1033,4 +1033,184 @@ public class GroupCUDE2ETest extends E2EMvcTest {
 					});
 		}
 	}
+
+	@Nested
+	class ApproveGroupRegistration {
+
+		private final String URL = BASE_URL;
+
+		@BeforeEach
+		public void setup() {
+			loginMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			token = jwtTokenProvider.createCommonAccessToken(loginMember.getId()).getTokenValue();
+		}
+
+		@Test
+		@DisplayName("그룹 멤버가 아닌 유저가 그룹 가입 승인 요청 시, 403 Forbidden 응답")
+		public void approveGroupRegistration_NotGroupMember_403Forbidden() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(anotherMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(anotherMember, group),
+					TestGroupRegistration.asNotApprovedCommonRegistration(targetMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = patch(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId()
+							+ "/register/approve")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("일반 그룹 멤버가 그룹 가입 승인 요청 시, 403 Forbidden 응답")
+		public void approveGroupRegistration_CommonGroupMember_403Forbidden() throws Exception {
+			// given
+			Member anotherMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(anotherMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(anotherMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(loginMember, group),
+					TestGroupRegistration.asNotApprovedCommonRegistration(targetMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = patch(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId()
+							+ "/register/approve")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isForbidden());
+		}
+
+		@Test
+		@DisplayName("그룹 멤버가 아닌 멤버를 대상으로 지정하여 그룹 가입 승인 요청 시, 404 Not Found 응답")
+		public void approveGroupRegistration_NotGroupMember_404NotFound() throws Exception {
+			// given
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = patch(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId()
+							+ "/register/approve")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("이미 승인된 멤버를 대상으로 지정하여 그룹 가입 승인 요청 시, 409 Conflict 응답")
+		public void approveGroupRegistration_AlreadyApprovedMember_409Conflict() throws Exception {
+			// given
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group),
+					TestGroupRegistration.asApprovedCommonRegistration(targetMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = patch(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId()
+							+ "/register/approve")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+
+			// then
+			resultActions.andExpect(status().isConflict());
+		}
+
+		@Test
+		@DisplayName("정상적인 그룹 가입 승인 요청 시, 200 OK 응답")
+		public void approveGroupRegistration_ValidRequest_200OK() throws Exception {
+			// given
+			Member targetMember = persistenceHelper.persistAndReturn(
+					TestMember.asDefaultEntity()
+			);
+			Group group = persistenceHelper.persistAndReturn(
+					TestGroup.builder()
+							.ownerMember(loginMember)
+							.build()
+							.asEntity()
+			);
+			persistenceHelper.persistAndReturn(
+					TestGroupRegistration.asOwnerRegistration(loginMember, group),
+					TestGroupRegistration.asNotApprovedCommonRegistration(targetMember, group)
+			);
+
+			// when
+			MockHttpServletRequestBuilder request = patch(
+					URL + "/" + group.getId() + "/members/" + targetMember.getId()
+							+ "/register/approve")
+					.header(AUTHORIZATION_VALUE, BEARER_VALUE + token);
+			ResultActions resultActions = mockMvc.perform(request);
+			persistenceHelper.flushAndClear();
+
+			// then
+			resultActions.andExpect(status().isOk())
+					.andDo(ignore -> {
+						GroupRegistration queriedGroupRegistration = em.createQuery(
+										"select gr from group_registration gr where gr.member.id = :memberId",
+										GroupRegistration.class)
+								.setParameter("memberId", targetMember.getId())
+								.getSingleResult();
+						assertThat(queriedGroupRegistration.getMember().getId()).isEqualTo(
+								targetMember.getId());
+						assertThat(queriedGroupRegistration.getGroup().getId()).isEqualTo(
+								group.getId());
+						assertThat(queriedGroupRegistration.getRole()).isEqualTo(
+								GroupRole.COMMON);
+						assertThat(queriedGroupRegistration.getRegisteredAt()).isNotNull();
+					});
+		}
+	}
 }
